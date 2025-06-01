@@ -52,3 +52,8 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(models.User, UserAdmin)
+@admin.register(models.Pessoa)
+class PessoaAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'email', 'telefone') 
+    search_fields = ('nome', 'email')
+    list_filter = ('nome',)
