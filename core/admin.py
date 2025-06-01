@@ -57,3 +57,9 @@ class PessoaAdmin(admin.ModelAdmin):
     list_display = ('nome', 'email', 'telefone') 
     search_fields = ('nome', 'email')
     list_filter = ('nome',)
+
+@admin.register(models.Endereco)
+class EnderecoAdmin(admin.ModelAdmin):
+    list_display = ('numero', 'bairro', 'rua', 'numero', 'cep')
+    search_fields = ('bairro', 'rua', 'numero', 'cep')
+    list_filter = ('bairro',)
