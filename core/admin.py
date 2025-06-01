@@ -63,3 +63,9 @@ class EnderecoAdmin(admin.ModelAdmin):
     list_display = ('numero', 'bairro', 'rua', 'numero', 'cep')
     search_fields = ('bairro', 'rua', 'numero', 'cep')
     list_filter = ('bairro',)
+
+@admin.register(models.Cartao)
+class CartaoAdmin(admin.ModelAdmin):
+    list_display = ('numero_cartao', 'nome_titular', 'data_de_validade')
+    search_fields = ('numero_cartao', 'nome_titular')
+    list_filter = ('data_de_validade',)
