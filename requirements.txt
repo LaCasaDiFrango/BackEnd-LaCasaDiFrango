@@ -15,7 +15,7 @@ colorama==0.4.6; sys_platform == "win32" or platform_system == "Windows"
 cryptography==44.0.2
 distlib==0.3.9
 dj-database-url==2.3.0
-django==5.1.7
+django==5.2.2
 django-cloudinary-storage==0.3.0
 django-cors-headers==4.7.0
 django-extensions==3.2.3
@@ -30,6 +30,7 @@ idna==3.10
 inflection==0.5.1
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
+mercadopago==2.3.0
 mysqlclient==2.2.7
 nodeenv==1.9.1
 packaging==24.1
