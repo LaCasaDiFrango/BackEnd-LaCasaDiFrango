@@ -1,4 +1,3 @@
-from .user import UserViewSet
-from .pessoa import PessoaViewSet
-from .endereco import EnderecoViewSet
-from .cartao import CartaoViewSet
+from .usuario.user import UserViewSet
+from .usuario.endereco import EnderecoViewSet
+from .usuario.cartao import CartaoViewSet

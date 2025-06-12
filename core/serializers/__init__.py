@@ -1,4 +1,3 @@
-from .user import UserSerializer
-from .pessoa import PessoaSerializer
-from .endereco import EnderecoSerializer
-from .cartao import CartaoSerializer
+from .usuario.user import UserSerializer
+from .usuario.endereco import EnderecoSerializer
+from .usuario.cartao import CartaoSerializer

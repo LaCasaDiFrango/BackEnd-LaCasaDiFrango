@@ -6,7 +6,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from core import models
+from core.models.usuario.user import User
+from core.models.usuario.endereco import Endereco
+from core.models.usuario.cartao import Cartao
 
 
 class UserAdmin(BaseUserAdmin):
@@ -51,20 +53,15 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
-admin.site.register(models.User, UserAdmin)
-@admin.register(models.Pessoa)
-class PessoaAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'email', 'telefone') 
-    search_fields = ('nome', 'email')
-    list_filter = ('nome',)
+admin.site.register(User, UserAdmin)
 
-@admin.register(models.Endereco)
+@admin.register(Endereco)
 class EnderecoAdmin(admin.ModelAdmin):
     list_display = ('numero', 'bairro', 'rua', 'numero', 'cep')
     search_fields = ('bairro', 'rua', 'numero', 'cep')
     list_filter = ('bairro',)
 
-@admin.register(models.Cartao)
+@admin.register(Cartao)
 class CartaoAdmin(admin.ModelAdmin):
     list_display = ('numero_cartao', 'nome_titular', 'data_de_validade')
     search_fields = ('numero_cartao', 'nome_titular')

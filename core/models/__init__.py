@@ -1,4 +1,3 @@
-from .user import User
-from .pessoa import Pessoa
-from .endereco import Endereco
-from .cartao import Cartao
+from .usuario.user import User
+from .usuario.endereco import Endereco
+from .usuario.cartao import Cartao
