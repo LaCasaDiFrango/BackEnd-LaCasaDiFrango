@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 
-from core.models import Endereco
-from core.serializers import EnderecoSerializer
+from core.models.usuario.endereco import Endereco
+from core.serializers.usuario.endereco import EnderecoSerializer
 
 class EnderecoViewSet(ModelViewSet):
     queryset = Endereco.objects.all()

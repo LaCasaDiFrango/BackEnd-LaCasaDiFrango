@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from core.models import Cartao
+from core.models.usuario.cartao import Cartao
 
 class CartaoSerializer(ModelSerializer):
     class Meta:
