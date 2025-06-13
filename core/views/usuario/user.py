@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from core.models import User
-from core.serializers import UserSerializer
+from core.models.usuario.user import User
+from core.serializers.usuario.user import UserSerializer
 
 
 class UserViewSet(ModelViewSet):
