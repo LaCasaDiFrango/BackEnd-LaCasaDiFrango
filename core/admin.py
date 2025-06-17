@@ -11,6 +11,8 @@ from core.models.usuario.endereco import Endereco
 from core.models.usuario.cartao import Cartao
 from core.models.produto.produto import Produto
 from core.models.produto.categoria import Categoria
+from core.models.pedido.pedido import Pedido
+from core.models.pedido.item_pedido import ItemPedido
 
 
 class UserAdmin(BaseUserAdmin):
@@ -80,3 +82,16 @@ class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nome','descricao')
     search_fields = ('nome',)
     list_filter = ('nome',)
+
+@admin.register(Pedido)
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ('data_de_retirada', 'status', 'usuario', 'preco_total')
+    search_fields = ('usuario__email', 'status')
+    list_filter = ('status', 'data_de_retirada')
+
+@admin.register(ItemPedido)
+class ItemPedidoAdmin(admin.ModelAdmin):
+    list_display = ('pedido', 'produto', 'quantidade')
+    search_fields = ('pedido', 'produto')
+    list_filter = ('pedido',)
+    raw_id_fields = ('pedido', 'produto')
