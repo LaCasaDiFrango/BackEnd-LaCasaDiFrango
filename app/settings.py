@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'corsheaders',
-    'django_extensions',
     'django_filters',
     'drf_spectacular',
     'rest_framework',

@@ -12,6 +12,8 @@ from core.views.usuario.endereco import EnderecoViewSet
 from core.views.usuario.cartao import CartaoViewSet
 from core.views.produto.produto import ProdutoViewSet
 from core.views.produto.categoria import CategoriaViewSet
+from core.views.pedido.pedido import PedidoViewSet
+from core.views.pedido.item_pedido import ItemPedidoViewSet
 
 router = DefaultRouter()
 
@@ -20,6 +22,8 @@ router.register(r'enderecos', EnderecoViewSet, basename='enderecos')
 router.register(r'cartoes', CartaoViewSet, basename='cartoes')
 router.register(r'produtos', ProdutoViewSet, basename='produtos')
 router.register(r'categorias', CategoriaViewSet, basename='categorias')
+router.register(r'pedidos', PedidoViewSet, basename='pedidos')
+router.register(r'itens-pedido', ItemPedidoViewSet, basename='itens-pedido')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
