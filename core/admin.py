@@ -13,6 +13,7 @@ from core.models.produto.produto import Produto
 from core.models.produto.categoria import Categoria
 from core.models.pedido.pedido import Pedido
 from core.models.pedido.item_pedido import ItemPedido
+from core.models.pagamento.pagamento import Pagamento
 
 
 class UserAdmin(BaseUserAdmin):
@@ -95,3 +96,9 @@ class ItemPedidoAdmin(admin.ModelAdmin):
     search_fields = ('pedido', 'produto')
     list_filter = ('pedido',)
     raw_id_fields = ('pedido', 'produto')
+
+@admin.register(Pagamento)
+class PagamentoAdmin(admin.ModelAdmin):
+    list_display = ('pedido',)
+    search_fields = ('pedido__id', )
+    list_filter = ('pedido',)
