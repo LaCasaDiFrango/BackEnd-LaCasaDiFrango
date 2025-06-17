@@ -6,3 +6,4 @@ from .produto.categoria import CategoriaViewSet
 from .pedido.pedido import PedidoViewSet
 from .pedido.item_pedido import ItemPedidoViewSet
 from .pagamento.pagamento import PagamentoViewSet
+from .pagamento.metodo_de_pagamento import MetodoDePagamentoViewSet

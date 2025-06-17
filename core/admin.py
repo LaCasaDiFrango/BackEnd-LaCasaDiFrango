@@ -14,6 +14,7 @@ from core.models.produto.categoria import Categoria
 from core.models.pedido.pedido import Pedido
 from core.models.pedido.item_pedido import ItemPedido
 from core.models.pagamento.pagamento import Pagamento
+from core.models.pagamento.metodo_de_pagamento import MetodoDePagamento
 
 
 class UserAdmin(BaseUserAdmin):
@@ -102,3 +103,9 @@ class PagamentoAdmin(admin.ModelAdmin):
     list_display = ('pedido',)
     search_fields = ('pedido__id', )
     list_filter = ('pedido',)
+
+@admin.register(MetodoDePagamento)
+class MetodoDePagamentoAdmin(admin.ModelAdmin):
+    list_display = ('cartao',)
+    search_fields = ('cartao',)
+    list_filter = ('cartao',)
