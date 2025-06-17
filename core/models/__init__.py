@@ -5,3 +5,5 @@ from .produto.produto import Produto
 from .produto.categoria import Categoria
 from .pedido.pedido import Pedido
 from .pedido.item_pedido import ItemPedido
+from .pagamento.pagamento import Pagamento
+from .pagamento.metodo_de_pagamento import MetodoDePagamento
