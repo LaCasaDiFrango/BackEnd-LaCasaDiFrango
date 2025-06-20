@@ -1,7 +1,7 @@
-from .usuario.user import UserSerializer
-from .usuario.endereco import EnderecoSerializer
+from .usuario.user import UserSerializer, UserRetrieveSerializer
+from .usuario.endereco import EnderecoSerializer, EnderecoRetrieveSerializer
 from .usuario.cartao import CartaoSerializer
-from .produto.produto import ProdutoSerializer
+from .produto.produto import ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer
 from .produto.categoria import CategoriaSerializer
 from .pedido.pedido import PedidoSerializer
 from .pedido.item_pedido import ItemPedidoSerializer

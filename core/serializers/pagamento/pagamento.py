@@ -6,3 +6,4 @@ class PagamentoSerializer(ModelSerializer):
     class Meta:
         model = Pagamento
         fields = '__all__'
+        depth = 1
