@@ -53,7 +53,7 @@ class TokenAuthentication(authentication.BaseAuthentication):
 
     def _get_user_id(self, token) -> str:
         try:
-            psg_user_id: str = psg.validateJwt(token)
+            psg_user_id: str = psg.auth.validate_jwt(token)
         except PassageError as e:
             # print(e)
             raise AuthenticationFailed(e.message) from e
