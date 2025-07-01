@@ -87,16 +87,18 @@ class CategoriaAdmin(admin.ModelAdmin):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('data_de_retirada', 'status', 'usuario', 'preco_total')
-    search_fields = ('usuario__email', 'status')
-    list_filter = ('status', 'data_de_retirada')
+    list_display = ('usuario', 'status')
+    search_fields = ('usuario', 'status')
+    list_filter = ('usuario', 'status')
+    ordering = ('usuario', 'status')
+    list_per_page = 10
+    inlines = [ItensCompraInline]
 
 @admin.register(ItemPedido)
-class ItemPedidoAdmin(admin.ModelAdmin):
-    list_display = ('pedido', 'produto', 'quantidade')
-    search_fields = ('pedido', 'produto')
-    list_filter = ('pedido',)
-    raw_id_fields = ('pedido', 'produto')
+class ItemPedidoInline(admin.TabularInline):
+    model = ItemPedido
+    extra = 1  # Quantidade de itens adicionais
+    
 
 @admin.register(Pagamento)
 class PagamentoAdmin(admin.ModelAdmin):
