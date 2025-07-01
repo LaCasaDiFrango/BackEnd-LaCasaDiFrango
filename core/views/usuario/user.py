@@ -5,14 +5,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from core.models.usuario.user import User
-from core.serializers.usuario.user import UserSerializer, UserRetrieveSerializer
+from core.serializers.usuario.user import UserSerializer, UserListSerializer
 
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all().order_by('id')
     def get_serializer_class(self):
-        if self.action == "retrieve":
-            return UserRetrieveSerializer
+        if self.action == "list":
+            return UserListSerializer
         return UserSerializer
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])

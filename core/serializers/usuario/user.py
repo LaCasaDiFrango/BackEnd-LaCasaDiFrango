@@ -9,7 +9,7 @@ class UserSerializer(ModelSerializer):
         fields = '__all__'
         depth = 1
 
-class ProdutoListSerializer(ModelSerializer):
+class UserListSerializer(ModelSerializer):
     class Meta:
-        model = Produto
+        model = User
         fields = ("id", "name", "email")

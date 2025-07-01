@@ -1,4 +1,4 @@
-from .usuario.user import UserSerializer, UserRetrieveSerializer
+from .usuario.user import UserSerializer, UserListSerializer
 from .usuario.endereco import EnderecoSerializer, EnderecoRetrieveSerializer
 from .usuario.cartao import CartaoSerializer
 from .produto.produto import ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer
