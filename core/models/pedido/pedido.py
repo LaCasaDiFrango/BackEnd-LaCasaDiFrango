@@ -10,7 +10,6 @@ class Pedido(models.Model):
         PAGO = 3, "Pago"
         ENTREGUE = 4, "Entregue"
 
-    preco_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Preço Total do Pedido', default=0.00)
     data_de_retirada = models.DateTimeField(verbose_name='Data de Validade do Pedido', auto_now_add=True)
     status = CharField(source='get_status_display', read_only=True)
     usuario = CharField(source='usuario.e-mail', read_only=True)
