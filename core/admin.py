@@ -91,10 +91,10 @@ class ItemPedidoInline(admin.TabularInline):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ( 'data_de_retirada',)
-    search_fields = ( 'data_de_retirada',)
-    list_filter = ( 'data_de_retirada',)
-    ordering = ( 'data_de_retirada',)
+    list_display = ( 'usuario','status', 'data_de_retirada',)
+    search_fields = ( 'usuario','status', 'data_de_retirada',)
+    list_filter = ( 'usuario','status', 'data_de_retirada',)
+    ordering = ( 'usuario','status', 'data_de_retirada',)
     list_per_page = 10
     inlines = [ItemPedidoInline]
 
