@@ -14,7 +14,7 @@ class ItemPedidoSerializer(ModelSerializer):
         fields = ('produto', 'quantidade', 'total')
         depth = 1
 
-class ItensCompraCreateUpdateSerializer(ModelSerializer):
+class ItemPedidoCreateUpdateSerializer(ModelSerializer):
     class Meta:
-        model = ItensCompra
+        model = ItemPedido
         fields = ('produto', 'quantidade')
