@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer, CharField, SerializerMethodField
 from core.models.pedido.pedido import Pedido
 from core.models.pedido.item_pedido import ItemPedido
-from core.serializers.pedido.item_pedido import ItemPedidoSerializer, ItemPedidoCreateUpdateSerializer
+from core.serializers.pedido.item_pedido import ItemPedidoSerializer, ItemPedidoCreateUpdateSerializer, ItemPedidoListSerializer
 
 class PedidoSerializer(ModelSerializer):
     usuario = CharField(source='usuario.email', read_only=True)
@@ -30,3 +30,11 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
             ItemPedido.objects.create(pedido=pedido, **item_data)
         pedido.save()
         return pedido
+
+class PedidoListSerializer(ModelSerializer):
+    usuario = CharField(source='usuario.e-mail', read_only=True)
+    itens = ItemPedidoListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Pedido
+        fields = ('id', 'usuario', 'itens')
