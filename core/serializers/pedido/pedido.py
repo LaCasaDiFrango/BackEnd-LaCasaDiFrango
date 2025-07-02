@@ -33,7 +33,7 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
         return pedido
 
 class PedidoListSerializer(ModelSerializer):
-    usuario = CharField(source='usuario.e-mail', read_only=True)
+    usuario = CharField(source='usuario.email', read_only=True)
     itens = ItemPedidoListSerializer(many=True, read_only=True)
 
     class Meta:
