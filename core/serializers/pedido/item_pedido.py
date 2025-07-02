@@ -13,3 +13,16 @@ class ItemPedidoSerializer(ModelSerializer):
         model = ItemPedido
         fields = ('produto', 'quantidade', 'total')
         depth = 1
+
+class ItemPedidoCreateUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = ItemPedido
+        fields = ('produto', 'quantidade')
+
+class ItemPedidoListSerializer(ModelSerializer):
+    produto = CharField(source='produto.nome', read_only=True)
+
+    class Meta:
+        model = ItemPedido
+        fields = ('quantidade', 'produto')
+        depth = 1
