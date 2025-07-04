@@ -20,13 +20,21 @@ class ItemPedidoCreateUpdateSerializer(ModelSerializer):
 
     def validate_quantidade(self, quantidade):
         if quantidade <= 0:
-            raise ValidationError('A quantidade deve ser maior do que zero.')
+            raise ValidationError("Quantidade do item deve ser maior que zero.")
         return quantidade
 
-    def validate(self, item):
-        if item['quantidade'] > item['produto'].quantidade:
-            raise ValidationError('Quantidade de itens maior do que a quantidade em estoque.')
-        return item
+    def validate(self, data):
+        produto = data.get('produto')
+        quantidade = data.get('quantidade')
+
+        if produto is None or quantidade is None:
+            return data  # ou lance ValidationError se quiser campo obrigatório explicitamente
+
+        if quantidade > produto.quantidade:
+            raise ValidationError("Quantidade do item maior que estoque disponível.")
+
+        return data
+
 
 class ItemPedidoListSerializer(ModelSerializer):
     produto = CharField(source='produto.nome', read_only=True)
