@@ -1,4 +1,5 @@
 
+from core.models.produto.produto import Produto
 from core.models.pedido.item_pedido import ItemPedido
 from rest_framework.serializers import CharField, ModelSerializer, SerializerMethodField, ValidationError
 
@@ -28,10 +29,11 @@ class ItemPedidoCreateUpdateSerializer(ModelSerializer):
         quantidade = data.get('quantidade')
 
         if produto is None or quantidade is None:
-            return data  # ou lance ValidationError se quiser campo obrigatório explicitamente
+            raise ValidationError("Produto e quantidade são obrigatórios.")
 
-        if quantidade > produto.quantidade:
-            raise ValidationError("Quantidade do item maior que estoque disponível.")
+
+        if quantidade > produto.quantidade_em_estoque:
+            raise ValidationError("Quantidade do item maior que o estoque disponível.")
 
         return data
 
