@@ -4,16 +4,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from core.models.produto.produto import Produto
 from core.serializers.produto.produto import (ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer, ProdutoAlterarPrecoSerializer, ProdutoAjustarEstoqueSerializer)
 
 class ProdutoViewSet(ModelViewSet):
     queryset = Produto.objects.all()
     serializer_class = ProdutoSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['categoria__descricao', 'editora__nome']
     search_fields = ['nome']
+    ordering_fields = ['nome', 'preco']
+    ordering = ['nome']
 
     def get_serializer_class(self):
         if self.action == "list":
