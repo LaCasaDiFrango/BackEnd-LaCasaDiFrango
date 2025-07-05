@@ -25,10 +25,11 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
         fields = ('usuario', 'itens')
 
     def create(self, validated_data):
-        itens_data = validated_data.pop('itens')
+        itens = validated_data.pop('itens')
         pedido = Pedido.objects.create(**validated_data)
-        for item_data in itens_data:
-            ItemPedido.objects.create(pedido=pedido, **item_data)
+        for item in itens:
+            item['preco'] = item['produto'].preco # nova linha
+            ItemPedido.objects.create(pedido=pedido, **item)
         pedido.save()
         return pedido
 
