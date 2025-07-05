@@ -23,7 +23,7 @@ class ProdutoViewSet(ModelViewSet):
         produto.save()
 
         return Response(
-            {'detail': f'Preço do produto "{produto.titulo}" atualizado para {produto.preco}.'}, status=status.HTTP_200_OK
+            {'detail': f'Preço do produto "{produto.nome}" atualizado para {produto.preco}.'}, status=status.HTTP_200_OK
         )
 
     @action(detail=True, methods=['post'])
@@ -41,3 +41,18 @@ class ProdutoViewSet(ModelViewSet):
         return Response(
             {'status': 'Quantidade ajustada com sucesso', 'novo_estoque': produto.quantidade_em_estoque}, status=status.HTTP_200_OK
         )
+
+    @action(detail=False, methods=['get'])
+    def mais_vendidos(self, request):
+        produtos = Produto.objects.annotate(total_vendidos=Sum('itenscompra__quantidade')).filter(total_vendidos__gt=10)
+
+        data = [
+            {
+                'id': produto.id,
+                'nome': produto.nome,
+                'total_vendidos': produto.total_vendidos,
+            }
+            for produto in produtos
+        ]
+
+        return Response(data, status=status.HTTP_200_OK)
