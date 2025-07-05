@@ -52,3 +52,22 @@ class PedidoViewSet(ModelViewSet):
             pedido.save()
 
         return Response(status=status.HTTP_200_OK, data={'status': 'Pedido finalizada'})
+
+    @action(detail=False, methods=['get'])
+    def relatorio_vendas_mes(self, request):
+        agora = timezone.now()
+        inicio_mes = agora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        pedidos = pedido.objects.filter(status=Pedido.StatusCompra.FINALIZADO, data__gte=inicio_mes)
+
+        total_vendas = sum(pedido.total for pedido in pedidos)
+        quantidade_vendas = pedidos.count()
+
+        return Response(
+            {
+                'status': 'Relatório de vendas deste mês',
+                'total_vendas': total_vendas,
+                'quantidade_vendas': quantidade_vendas,
+            },
+            status=status.HTTP_200_OK,
+        )
