@@ -1,10 +1,19 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models.produto.produto import Produto
-from core.serializers.produto.produto import ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer, ProdutoAlterarPrecoSerializer
+from core.serializers.produto.produto import (ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer, ProdutoAlterarPrecoSerializer, ProdutoAjustarEstoqueSerializer)
 
 class ProdutoViewSet(ModelViewSet):
     queryset = Produto.objects.all()
+    serializer_class = ProdutoSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['categoria__descricao', 'preco', 'quantidade_em_estoque']
+
     def get_serializer_class(self):
         if self.action == "list":
             return ProdutoListSerializer
@@ -23,7 +32,8 @@ class ProdutoViewSet(ModelViewSet):
         produto.save()
 
         return Response(
-            {'detail': f'Preço do produto "{produto.nome}" atualizado para {produto.preco}.'}, status=status.HTTP_200_OK
+            {'detail': f'Preço do produto "{produto.nome}" atualizado para {produto.preco}.'},
+            status=status.HTTP_200_OK
         )
 
     @action(detail=True, methods=['post'])
@@ -34,12 +44,12 @@ class ProdutoViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         quantidade_ajuste = serializer.validated_data['quantidade_em_estoque']
-
         produto.quantidade_em_estoque += quantidade_ajuste
         produto.save()
 
         return Response(
-            {'status': 'Quantidade ajustada com sucesso', 'novo_estoque': produto.quantidade_em_estoque}, status=status.HTTP_200_OK
+            {'status': 'Quantidade ajustada com sucesso', 'novo_estoque': produto.quantidade_em_estoque},
+            status=status.HTTP_200_OK
         )
 
     @action(detail=False, methods=['get'])
