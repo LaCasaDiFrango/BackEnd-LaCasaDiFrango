@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField
+from rest_framework.serializers import ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField, DateTimeField
 from core.models.pedido.pedido import Pedido
 from core.models.pedido.item_pedido import ItemPedido
 from core.serializers.pedido.item_pedido import ItemPedidoSerializer, ItemPedidoCreateUpdateSerializer, ItemPedidoListSerializer
@@ -6,6 +6,7 @@ from core.serializers.pedido.item_pedido import ItemPedidoSerializer, ItemPedido
 class PedidoSerializer(ModelSerializer):
     usuario = CharField(source='usuario.email', read_only=True)
     status = CharField(source='get_status_display', read_only=True)
+    data_de_retirada = DateTimeField(read_only=True)
     itens = ItemPedidoSerializer(many=True, read_only=True)
     total = SerializerMethodField()
 
@@ -14,7 +15,7 @@ class PedidoSerializer(ModelSerializer):
 
     class Meta:
         model = Pedido
-        fields = ('id', 'usuario', 'status', 'total', 'itens')
+        fields = ('id', 'usuario', 'status', 'total', 'itens', 'data_de_retirada',)
 
 class PedidoCreateUpdateSerializer(ModelSerializer):
     usuario = HiddenField(default=CurrentUserDefault())
