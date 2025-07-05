@@ -64,7 +64,7 @@ class PedidoViewSet(ModelViewSet):
         agora = timezone.now()
         inicio_mes = agora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        pedidos = pedido.objects.filter(status=Pedido.StatusCompra.FINALIZADO, data__gte=inicio_mes)
+        pedidos = Pedido.objects.filter(status=Pedido.StatusCompra.FINALIZADO, data__gte=inicio_mes)
 
         total_vendas = sum(pedido.total for pedido in pedidos)
         quantidade_vendas = pedidos.count()
