@@ -1,7 +1,7 @@
-from rest_framework.serializers import ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField, DateTimeField
+from rest_framework.serializers import (ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField, DateTimeField)
 from core.models.pedido.pedido import Pedido
 from core.models.pedido.item_pedido import ItemPedido
-from core.serializers.pedido.item_pedido import ItemPedidoSerializer, ItemPedidoCreateUpdateSerializer, ItemPedidoListSerializer
+from core.serializers.pedido.item_pedido import (ItemPedidoSerializer, ItemPedidoCreateUpdateSerializer, ItemPedidoListSerializer)
 from django.db import transaction
 
 class PedidoSerializer(ModelSerializer):
@@ -12,11 +12,11 @@ class PedidoSerializer(ModelSerializer):
     total = SerializerMethodField()
 
     def get_total(self, instance):
-        return sum(item.produto.preco * item.quantidade for item in instance.itens.all())
+        return instance.total
 
     class Meta:
         model = Pedido
-        fields = ('id', 'usuario', 'status', 'total', 'itens', 'data_de_retirada',)
+        fields = ('id', 'usuario', 'status', 'total', 'itens', 'data_de_retirada')
 
 
 class PedidoCreateUpdateSerializer(ModelSerializer):
@@ -34,7 +34,7 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
 
         pedido, criado = Pedido.objects.get_or_create(
             usuario=usuario,
-            status=Pedido.StatusPedido.CARRINHO,
+            status=Pedido.StatusCompra.CARRINHO,
             defaults=validated_data
         )
 
@@ -49,6 +49,8 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
                 item['preco'] = item['produto'].preco
                 ItemPedido.objects.create(pedido=pedido, **item)
 
+        pedido.save()
+
         return pedido
 
     @transaction.atomic
@@ -60,6 +62,8 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
             for item in itens:
                 item['preco'] = item['produto'].preco
                 ItemPedido.objects.create(pedido=pedido, **item)
+
+        pedido.save()
 
         return super().update(pedido, validated_data)
 

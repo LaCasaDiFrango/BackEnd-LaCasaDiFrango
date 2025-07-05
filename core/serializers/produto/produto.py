@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, Serializer, DecimalField, IntegerField, ValidationError
 
 from core.models.produto.produto import Produto
 
@@ -30,7 +30,7 @@ class ProdutoAlterarPrecoSerializer(Serializer):
 class ProdutoAjustarEstoqueSerializer(Serializer):
     quantidade_em_estoque = IntegerField()
 
-    def validate_quantidade(self, value):
+    def validate_quantidade_em_estoque(self, value):
         produto = self.context.get('produto')
         if produto:
             nova_quantidade = produto.quantidade_em_estoque + value
