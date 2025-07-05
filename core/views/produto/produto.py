@@ -25,3 +25,19 @@ class ProdutoViewSet(ModelViewSet):
         return Response(
             {'detail': f'Preço do produto "{produto.titulo}" atualizado para {produto.preco}.'}, status=status.HTTP_200_OK
         )
+
+    @action(detail=True, methods=['post'])
+    def ajustar_estoque(self, request, pk=None):
+        produto = self.get_object()
+
+        serializer = ProdutoAjustarEstoqueSerializer(data=request.data, context={'produto': produto})
+        serializer.is_valid(raise_exception=True)
+
+        quantidade_ajuste = serializer.validated_data['quantidade_em_estoque']
+
+        produto.quantidade_em_estoque += quantidade_ajuste
+        produto.save()
+
+        return Response(
+            {'status': 'Quantidade ajustada com sucesso', 'novo_estoque': produto.quantidade_em_estoque}, status=status.HTTP_200_OK
+        )
