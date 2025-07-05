@@ -21,3 +21,34 @@ class PedidoViewSet(ModelViewSet):
         if usuario.groups.filter(name='administradores').exists():
             return Pedido.objects.all()
         return Pedido.objects.filter(usuario=usuario)
+
+    @action(detail=True, methods=["post"])
+    def finalizar(self, request, pk=None):
+        pedido = self.get_object()
+
+        if pedido.status != Pedido.StatusCompra.CARRINHO:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={'status': 'pedido já finalizada'},
+            )
+
+        with transaction.atomic():
+            for item in pedido.itens.all():
+
+                if item.quantidade > item.produto.quantidade_em_estoque:
+                    return Response(
+                        status=status.HTTP_400_BAD_REQUEST,
+                        data={
+                            'status': 'Quantidade insuficiente',
+                            'produto': item.produto.nome,
+                            'quantidade_disponivel': item.produto.quantidade_em_estoque,
+                        },
+                    )
+
+                item.produto.quantidade_em_estoque -= item.quantidade
+                item.produto.save()
+
+            pedido.status = pedido.StatusCompra.FINALIZADO
+            pedido.save()
+
+        return Response(status=status.HTTP_200_OK, data={'status': 'Pedido finalizada'})
