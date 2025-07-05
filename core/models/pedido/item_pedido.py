@@ -10,7 +10,7 @@ class ItemPedido(models.Model):
 
     @property
     def total(self):
-        return sum(item.preco * item.quantidade for item in self.itens.all())
+        return self.preco * self.quantidade
 
 
     def __str__(self):
