@@ -136,8 +136,8 @@ else:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': '<PROJETO> API',
-    'DESCRIPTION': 'API para o projeto <descreva aqui seu projeto>.',
+    'TITLE': 'LaCasaDifrango API',
+    'DESCRIPTION': 'API para sistema de pedidos, pagamentos e usuários',
     'VERSION': '1.0.0',
 }
 
