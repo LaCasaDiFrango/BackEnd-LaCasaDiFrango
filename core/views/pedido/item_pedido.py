@@ -18,11 +18,11 @@ class ItemPedidoViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser or user.groups.filter(name='Administrador').exists():
+        if user.is_superuser or user.groups.filter(name='administradores').exists():
             return ItemPedido.objects.all()
         # Para usuários comuns, só retorna itens dos pedidos deles
         return ItemPedido.objects.filter(pedido__usuario=user)
-        
+
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return ItemPedidoCreateUpdateSerializer

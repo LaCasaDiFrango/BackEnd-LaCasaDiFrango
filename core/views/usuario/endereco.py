@@ -18,7 +18,7 @@ class EnderecoViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser or user.groups.filter(name='Administrador').exists():
+        if user.is_superuser or user.groups.filter(name='administradores').exists():
             # Admin vê todos os endereços
             return Endereco.objects.all()
         # Usuário comum vê apenas os próprios endereços

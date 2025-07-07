@@ -7,7 +7,7 @@ class IsAdminUser(BasePermission):
     """
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and (user.is_superuser or user.groups.filter(name='Administrador').exists()))
+        return bool(user and user.is_authenticated and (user.is_superuser or user.groups.filter(name='administradores').exists()))
 
 
 class IsConsumerUser(BasePermission):
@@ -16,7 +16,7 @@ class IsConsumerUser(BasePermission):
     """
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.groups.filter(name='Usuario').exists())
+        return bool(user and user.is_authenticated and user.groups.filter(name='usuarios').exists())
 
 
 class IsGuestOrReadOnly(BasePermission):

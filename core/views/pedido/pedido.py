@@ -33,7 +33,7 @@ class PedidoViewSet(ModelViewSet):
 
     def get_queryset(self):
         usuario = self.request.user
-        if usuario.is_superuser or usuario.groups.filter(name='Administrador').exists():
+        if usuario.is_superuser or usuario.groups.filter(name='administradores').exists():
             return Pedido.objects.all()
         return Pedido.objects.filter(usuario=usuario)
 
