@@ -9,7 +9,7 @@ from core.models.pedido.pedido import Pedido
 from core.serializers.pedido.pedido import PedidoSerializer, PedidoCreateUpdateSerializer, PedidoListSerializer
 
 from rest_framework.permissions import IsAuthenticated
-from core.permissions import IsAdminUser
+from core.permissions import IsAdminUser, IsOwnerOrAdmin
 
 class PedidoViewSet(ModelViewSet):
     queryset = Pedido.objects.all()
@@ -23,13 +23,14 @@ class PedidoViewSet(ModelViewSet):
         return PedidoSerializer
 
     def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'destroy', 'relatorio_vendas_mes']:
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOwnerOrAdmin()]
+        if self.action == 'relatorio_vendas_mes':
             return [IsAuthenticated(), IsAdminUser()]
         if self.action == 'finalizar':
-            return [IsAuthenticated()]  # qualquer usuário logado pode finalizar seu pedido
-        if self.action in ['create', 'list', 'retrieve']:
-            return [IsAuthenticated()]
-        return super().get_permissions()
+            return [IsAuthenticated(), IsOwnerOrAdmin()]
+        return [IsAuthenticated()]
+
 
     def get_queryset(self):
         usuario = self.request.user
