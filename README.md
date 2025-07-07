@@ -1,3 +1,4 @@
+
 # 🍗 La Casa Di Frango – Backend API
 
 Backend desenvolvido em Django + Django REST Framework para gerenciamento de pedidos, produtos, pagamentos e usuários do sistema **La Casa Di Frango**.
@@ -16,20 +17,23 @@ Backend desenvolvido em Django + Django REST Framework para gerenciamento de ped
 * 💰 Pagamento vinculado ao pedido
 * 📈 Relatório de vendas mensais
 * 📊 Produtos mais vendidos
+* 🔒 Sistema de permissões personalizado com grupos (administradores, usuários, convidados)
+* 🔐 Controle de acesso para garantir que usuários só acessem/modifiquem seus próprios dados
+* 📚 Documentação automática da API com Swagger e Redoc
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-* Django
-* Django REST Framework
-* PostgreSQL (produção) / SQLite (dev)
-* Passage ID (autenticação)
-* Swagger / drf-spectacular (documentação da API)
-* Cloudinary (armazenamento de imagens)
-* Django-filter, Django-extensions, Corsheaders, Whitenoise
-* Render (deploy)
-* PDM (gerenciador de pacotes)
+* Django  
+* Django REST Framework  
+* PostgreSQL (produção) / SQLite (dev)  
+* Passage ID (autenticação)  
+* Swagger / drf-spectacular (documentação da API)  
+* Cloudinary (armazenamento de imagens)  
+* Django-filter, Django-extensions, Corsheaders, Whitenoise  
+* Render (deploy)  
+* PDM (gerenciador de pacotes)  
 
 ---
 
@@ -74,25 +78,56 @@ Exemplos:
 
 ### 📦 Produtos
 
-* `GET /api/produtos/` → Lista com filtros, busca e ordenação
-* `PATCH /api/produtos/{id}/alterar_preco/` → Altera o preço
-* `POST /api/produtos/{id}/ajustar_estoque/` → Ajusta estoque
-* `GET /api/produtos/mais_vendidos/` → Lista produtos mais vendidos
+* `GET /api/produtos/` → Lista com filtros, busca e ordenação  
+* `PATCH /api/produtos/{id}/alterar_preco/` → Altera o preço  
+* `POST /api/produtos/{id}/ajustar_estoque/` → Ajusta estoque  
+* `GET /api/produtos/mais_vendidos/` → Lista produtos mais vendidos  
 
 ### 🛒 Pedidos
 
-* `POST /api/pedidos/` → Criação de pedido
-* `POST /api/pedidos/{id}/finalizar/` → Finaliza pedido (valida estoque)
-* `GET /api/pedidos/relatorio_vendas_mes/` → Relatório de vendas
+* `POST /api/pedidos/` → Criação de pedido  
+* `POST /api/pedidos/{id}/finalizar/` → Finaliza pedido (valida estoque)  
+* `GET /api/pedidos/relatorio_vendas_mes/` → Relatório de vendas  
 
 ### 📟 Pagamentos
 
-* `POST /api/pagamentos/` → Associa método de pagamento ao pedido
+* `POST /api/pagamentos/` → Associa método de pagamento ao pedido  
 
 ### 👤 Usuário
 
-* `GET /api/users/` → Lista usuários (admin)
-* `GET /api/users/me/` → Dados do usuário logado
+* `GET /api/users/` → Lista usuários (admin)  
+* `GET /api/users/me/` → Dados do usuário logado  
+
+---
+
+## 🔐 Permissões e Controle de Acesso
+
+O backend utiliza grupos e permissões personalizadas para controle de acesso:
+
+- Grupos configurados:
+  - `administradores` — acesso completo para gestão do sistema  
+  - `usuarios` — consumidores que podem criar pedidos e gerenciar seus dados  
+  - `convidados` — acesso somente leitura para dados públicos  
+
+- Permissões customizadas aplicadas nas views, como:
+  - **IsOwnerOrAdmin** — garante que só o dono do recurso ou administrador tenha acesso para leitura e escrita  
+  - **IsGuestOrReadOnly** — permite leitura pública, mas restringe modificações para usuários autenticados  
+  - Validações extras para proteger contra acessos indevidos via manipulação direta de IDs  
+
+---
+
+## 📚 Documentação da API
+
+A API está documentada automaticamente com OpenAPI 3 via drf-spectacular, facilitando o uso, teste e manutenção:
+
+- **Swagger UI** (interface interativa para testar endpoints):  
+  `/api/swagger/`
+
+- **Redoc UI** (documentação legível e organizada):  
+  `/api/redoc/`
+
+- **Schema JSON OpenAPI:**  
+  `/api/schema/`
 
 ---
 
@@ -100,7 +135,7 @@ Exemplos:
 
 1. Instale [Python 3.11+](https://www.python.org/) e [PDM](https://pdm.fming.dev/):
 
-```
+```bash
 pip install pdm
 ```
 
@@ -110,7 +145,7 @@ pip install pdm
 pdm install
 ```
 
-3. Copie o `.env.exemplo` para `.env` e configure:
+3. Copie o `.env.exemplo` para `.env` e configure as variáveis:
 
 ```bash
 cp .env.exemplo .env
@@ -123,28 +158,22 @@ pdm run migrate
 pdm run dev
 ```
 
-5. Acesse:
+5. Acesse a API:
 
-* API: [http://localhost:19003/api/](http://localhost:19003/api/)
-* Swagger: [http://localhost:19003/api/schema/swagger-ui/](http://localhost:19003/api/schema/swagger-ui/)
+- API: [http://localhost:19003/api/](http://localhost:19003/api/)  
+- Swagger: [http://localhost:19003/api/swagger/](http://localhost:19003/api/swagger/)  
+- Redoc: [http://localhost:19003/api/redoc/](http://localhost:19003/api/redoc/)  
 
 ---
 
 ## 📌 Comandos Úteis
 
-* `pdm run dev` – Executa o servidor local
-* `pdm run migrate` – Gera e aplica as migrações do banco de dados
-* `pdm run createsu` – Cria superusuário (se configurado no `pyproject.toml`)
+* `pdm run dev` – Executa o servidor local  
+* `pdm run migrate` – Aplica migrações do banco de dados  
+* `pdm run createsu` – Cria superusuário (configurado no `pyproject.toml`)  
 
 ---
 
-## 📈 Melhorias Futuras
-
-* [ ] Integração com gateway de pagamento Mercado Pago
-* [ ] Envio de notificações por email
-* [ ] Dashboard de administração com gráficos
-
----
 
 ## 📄 Licença
 
