@@ -8,6 +8,8 @@ from django.utils import timezone
 from core.models.pedido.pedido import Pedido
 from core.serializers.pedido.pedido import PedidoSerializer, PedidoCreateUpdateSerializer, PedidoListSerializer
 
+from rest_framework.permissions import IsAuthenticated
+from core.permissions import IsAdminUser
 
 class PedidoViewSet(ModelViewSet):
     queryset = Pedido.objects.all()
@@ -20,17 +22,31 @@ class PedidoViewSet(ModelViewSet):
             return PedidoCreateUpdateSerializer
         return PedidoSerializer
 
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy', 'relatorio_vendas_mes']:
+            return [IsAuthenticated(), IsAdminUser()]
+        if self.action == 'finalizar':
+            return [IsAuthenticated()]  # qualquer usuário logado pode finalizar seu pedido
+        if self.action in ['create', 'list', 'retrieve']:
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
     def get_queryset(self):
         usuario = self.request.user
-        if usuario.is_superuser:
-            return Pedido.objects.all()
-        if usuario.groups.filter(name='administradores').exists():
+        if usuario.is_superuser or usuario.groups.filter(name='Administrador').exists():
             return Pedido.objects.all()
         return Pedido.objects.filter(usuario=usuario)
 
     @action(detail=True, methods=["post"])
     def finalizar(self, request, pk=None):
         pedido = self.get_object()
+
+        #Garante que só o dono do pedido ou admin finalize
+        if pedido.usuario != request.user and not request.user.is_superuser:
+            return Response(
+                {'detail': 'Você não tem permissão para finalizar este pedido.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         if pedido.status != Pedido.StatusCompra.CARRINHO:
             return Response(
@@ -57,7 +73,8 @@ class PedidoViewSet(ModelViewSet):
             pedido.status = pedido.StatusCompra.FINALIZADO
             pedido.save()
 
-        return Response(status=status.HTTP_200_OK, data={'status': 'Pedido finalizada'})
+        serializer = self.get_serializer(pedido)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
     def relatorio_vendas_mes(self, request):
