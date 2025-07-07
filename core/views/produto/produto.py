@@ -7,6 +7,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from core.models.produto.produto import Produto
 from core.serializers.produto.produto import (ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer, ProdutoAlterarPrecoSerializer, ProdutoAjustarEstoqueSerializer)
+from rest_framework.permissions import IsAuthenticated
+from core.permissions import IsAdminUser, IsGuestOrReadOnly
+
 
 class ProdutoViewSet(ModelViewSet):
     queryset = Produto.objects.all()
@@ -16,6 +19,14 @@ class ProdutoViewSet(ModelViewSet):
     search_fields = ['nome']
     ordering_fields = ['nome', 'preco']
     ordering = ['nome']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'alterar_preco', 'ajustar_estoque']:
+            return [IsAuthenticated(), IsAdminUser()]  # Apenas administradores podem alterar
+        if self.action in ['list', 'retrieve', 'mais_vendidos']:
+            return [IsGuestOrReadOnly()]  # Qualquer pessoa pode ver
+        return super().get_permissions()
+
 
     def get_serializer_class(self):
         if self.action == "list":
