@@ -9,7 +9,6 @@ from django.utils.translation import gettext_lazy as _
 
 class PerfilChoices(models.TextChoices):
     USUARIO = 'usuario', 'Usuário'
-    VENDEDOR = 'vendedor', 'Vendedor'
     ADMIN = 'administrador', 'Administrador'
 
 
