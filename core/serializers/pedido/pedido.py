@@ -22,15 +22,19 @@ class PedidoSerializer(ModelSerializer):
 class PedidoCreateUpdateSerializer(ModelSerializer):
     usuario = HiddenField(default=CurrentUserDefault())
     itens = ItemPedidoCreateUpdateSerializer(many=True)
+    status = CharField(required=False, default=Pedido.StatusCompra.CARRINHO)
 
     class Meta:
         model = Pedido
-        fields = ('usuario', 'itens')
+        fields = ('usuario', 'itens', 'status')
 
     @transaction.atomic
     def create(self, validated_data):
         itens = validated_data.pop('itens')
         usuario = validated_data['usuario']
+
+    # Remove 'status' de validated_data para evitar conflito
+        validated_data.pop('status', None)
 
         pedido, criado = Pedido.objects.get_or_create(
             usuario=usuario,
@@ -49,6 +53,7 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
                 item['preco'] = item['produto'].preco
                 ItemPedido.objects.create(pedido=pedido, **item)
 
+        pedido.total = sum(item.preco * item.quantidade for item in pedido.itens.all())
         pedido.save()
 
         return pedido

@@ -17,5 +17,5 @@ class Pedido(models.Model):
         return f"{self.data_de_retirada} - {self.get_status_display()}"
 
     def save(self, *args, **kwargs):
-        self.total = sum(item.preco * item.quantidade for item in self.itens.all())
+        #self.total = sum(item.preco * item.quantidade for item in self.itens.all())
         super().save(*args, **kwargs)
