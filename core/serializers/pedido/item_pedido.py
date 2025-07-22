@@ -1,9 +1,21 @@
-
 from core.models.produto.produto import Produto
 from core.models.pedido.item_pedido import ItemPedido
-from rest_framework.serializers import CharField, ModelSerializer, SerializerMethodField, ValidationError
+from rest_framework.serializers import (
+    CharField,
+    ModelSerializer,
+    SerializerMethodField,
+    ValidationError
+)
 
+# Novo serializer para exibir detalhes do produto no pedido
+class ProdutoPedidoSerializer(ModelSerializer):
+    class Meta:
+        model = Produto
+        fields = ('id', 'nome', 'preco', 'quantidade_em_estoque')
+
+# Atualizado: agora inclui detalhes do produto no retorno
 class ItemPedidoSerializer(ModelSerializer):
+    produto = ProdutoPedidoSerializer(read_only=True)
     total = SerializerMethodField()
 
     def get_total(self, instance):
@@ -12,8 +24,8 @@ class ItemPedidoSerializer(ModelSerializer):
     class Meta:
         model = ItemPedido
         fields = ('produto', 'quantidade', 'total')
-        depth = 1
 
+# Usado na criação e atualização de pedidos
 class ItemPedidoCreateUpdateSerializer(ModelSerializer):
     class Meta:
         model = ItemPedido
@@ -31,15 +43,14 @@ class ItemPedidoCreateUpdateSerializer(ModelSerializer):
         if produto is None or quantidade is None:
             raise ValidationError("Produto e quantidade são obrigatórios.")
 
-
         if quantidade > produto.quantidade_em_estoque:
             raise ValidationError("Quantidade do item maior que o estoque disponível.")
 
         return data
 
-
+# Lista de itens em um pedido resumido (ex: listagem de pedidos)
 class ItemPedidoListSerializer(ModelSerializer):
-    produto = CharField(source='produto.nome', read_only=True)
+    produto = ProdutoPedidoSerializer(read_only=True)
 
     class Meta:
         model = ItemPedido

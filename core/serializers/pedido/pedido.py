@@ -1,5 +1,6 @@
 from rest_framework.serializers import (ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField, DateTimeField)
 from core.models.pedido.pedido import Pedido
+from core.models.produto.produto import Produto
 from core.models.pedido.item_pedido import ItemPedido
 from core.serializers.pedido.item_pedido import (ItemPedidoSerializer, ItemPedidoCreateUpdateSerializer, ItemPedidoListSerializer)
 from django.db import transaction
@@ -32,8 +33,6 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
     def create(self, validated_data):
         itens = validated_data.pop('itens')
         usuario = validated_data['usuario']
-
-    # Remove 'status' de validated_data para evitar conflito
         validated_data.pop('status', None)
 
         pedido, criado = Pedido.objects.get_or_create(
@@ -43,20 +42,20 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
         )
 
         for item in itens:
-            item_existente = pedido.itens.filter(produto=item['produto']).first()
+            produto_obj = item['produto']  # já é objeto, usa direto
 
+            item_existente = pedido.itens.filter(produto=produto_obj).first()
             if item_existente:
                 item_existente.quantidade += item['quantidade']
-                item_existente.preco = item['produto'].preco
                 item_existente.save()
             else:
-                item['preco'] = item['produto'].preco
-                ItemPedido.objects.create(pedido=pedido, **item)
+                ItemPedido.objects.create(pedido=pedido, produto=produto_obj, quantidade=item['quantidade'], preco=produto_obj.preco)
 
-        pedido.total = sum(item.preco * item.quantidade for item in pedido.itens.all())
+        pedido.total = sum(i.produto.preco * i.quantidade for i in pedido.itens.all())
         pedido.save()
 
         return pedido
+
 
     @transaction.atomic
     def update(self, pedido, validated_data):
@@ -75,8 +74,8 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
 
 class PedidoListSerializer(ModelSerializer):
     usuario = CharField(source='usuario.email', read_only=True)
-    itens = ItemPedidoListSerializer(many=True, read_only=True)
+    itens = ItemPedidoSerializer(many=True, read_only=True)  # aqui o produto vai vir completo
 
     class Meta:
         model = Pedido
-        fields = ('id', 'usuario', 'itens')
+        fields = ('id', 'usuario', 'itens', 'status')  # inclua status se quiser mostrar

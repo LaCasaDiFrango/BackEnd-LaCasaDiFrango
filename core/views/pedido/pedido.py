@@ -13,12 +13,13 @@ from core.permissions import IsAdminUser, IsOwnerOrAdmin
 
 class PedidoViewSet(ModelViewSet):
     queryset = Pedido.objects.all()
-    serializer_class = PedidoSerializer
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return PedidoListSerializer
-        if self.action in ('create', 'update'):
+            return PedidoListSerializer  # para listar com produtos aninhados
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return PedidoSerializer  # para detalhes completos
+        if self.action == 'create':
             return PedidoCreateUpdateSerializer
         return PedidoSerializer
 
