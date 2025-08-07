@@ -7,7 +7,10 @@ class IsPedidoOwnerOrAdmin(BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         user = request.user
+        print(f'[DEBUG IsPedidoOwnerOrAdmin] Usuário: {user}, Autenticado: {user.is_authenticated if user else "None"}')
+        
         if not user or not user.is_authenticated:
+            print('[DEBUG IsPedidoOwnerOrAdmin] Usuário não autenticado.')
             return False
         
         is_admin = (
@@ -15,10 +18,19 @@ class IsPedidoOwnerOrAdmin(BasePermission):
             user.groups.filter(name='administradores').exists() or
             getattr(user, 'perfil', None) == 'administrador'
         )
+        print(f'[DEBUG IsPedidoOwnerOrAdmin] is_admin: {is_admin}')
+        
         try:
-            return is_admin or obj.pedido.usuario == user
+            owns_pedido = obj.pedido.usuario == user
+            print(f'[DEBUG IsPedidoOwnerOrAdmin] owns_pedido: {owns_pedido}')
+            result = is_admin or owns_pedido
         except AttributeError:
-            return False
+            print('[DEBUG IsPedidoOwnerOrAdmin] AttributeError no objeto, retornando False')
+            result = False
+
+        print(f'[DEBUG IsPedidoOwnerOrAdmin] Permissão concedida: {result}')
+        return result
+
 
 class IsOwnerOrAdmin(BasePermission):
     """
@@ -27,7 +39,10 @@ class IsOwnerOrAdmin(BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         user = request.user
+        print(f'[DEBUG IsOwnerOrAdmin] Usuário: {user}, Autenticado: {user.is_authenticated if user else "None"}')
+        
         if not user or not user.is_authenticated:
+            print('[DEBUG IsOwnerOrAdmin] Usuário não autenticado.')
             return False
 
         is_admin = (
@@ -35,7 +50,15 @@ class IsOwnerOrAdmin(BasePermission):
             user.groups.filter(name='administradores').exists() or
             getattr(user, 'perfil', None) == 'administrador'
         )
-        return is_admin or getattr(obj, 'usuario', None) == user
+        print(f'[DEBUG IsOwnerOrAdmin] is_admin: {is_admin}')
+        
+        is_owner = getattr(obj, 'usuario', None) == user
+        print(f'[DEBUG IsOwnerOrAdmin] is_owner: {is_owner}')
+        
+        result = is_admin or is_owner
+        print(f'[DEBUG IsOwnerOrAdmin] Permissão concedida: {result}')
+        return result
+
 
 class IsAdminUser(BasePermission):
     """
@@ -43,7 +66,9 @@ class IsAdminUser(BasePermission):
     """
     def has_permission(self, request, view):
         user = request.user
-        return bool(
+        print(f'[DEBUG IsAdminUser] Usuário: {user}, Autenticado: {user.is_authenticated if user else "None"}')
+        
+        result = bool(
             user and
             user.is_authenticated and
             (
@@ -52,6 +77,9 @@ class IsAdminUser(BasePermission):
                 getattr(user, 'perfil', None) == 'administrador'
             )
         )
+        print(f'[DEBUG IsAdminUser] Permissão concedida: {result}')
+        return result
+
 
 class IsConsumerUser(BasePermission):
     """
@@ -59,7 +87,9 @@ class IsConsumerUser(BasePermission):
     """
     def has_permission(self, request, view):
         user = request.user
-        return bool(
+        print(f'[DEBUG IsConsumerUser] Usuário: {user}, Autenticado: {user.is_authenticated if user else "None"}')
+
+        result = bool(
             user and
             user.is_authenticated and
             (
@@ -67,6 +97,9 @@ class IsConsumerUser(BasePermission):
                 getattr(user, 'perfil', None) == 'usuario'
             )
         )
+        print(f'[DEBUG IsConsumerUser] Permissão concedida: {result}')
+        return result
+
 
 class IsGuestOrReadOnly(BasePermission):
     """
@@ -74,7 +107,11 @@ class IsGuestOrReadOnly(BasePermission):
     Só usuários autenticados podem modificar.
     """
     def has_permission(self, request, view):
+        print(f'[DEBUG IsGuestOrReadOnly] Método: {request.method}')
         if request.method in SAFE_METHODS:
+            print('[DEBUG IsGuestOrReadOnly] Método seguro (leitura), permissão concedida.')
             return True
         user = request.user
-        return bool(user and user.is_authenticated)
+        result = bool(user and user.is_authenticated)
+        print(f'[DEBUG IsGuestOrReadOnly] Usuário autenticado: {result}')
+        return result
