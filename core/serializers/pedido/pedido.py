@@ -42,14 +42,21 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
         )
 
         for item in itens:
-            produto_obj = item['produto']  # já é objeto, usa direto
+            produto_obj = item['produto']
+            if not isinstance(produto_obj, Produto):
+                produto_obj = Produto.objects.get(pk=produto_obj.id if hasattr(produto_obj, 'id') else produto_obj)
 
             item_existente = pedido.itens.filter(produto=produto_obj).first()
             if item_existente:
                 item_existente.quantidade += item['quantidade']
                 item_existente.save()
             else:
-                ItemPedido.objects.create(pedido=pedido, produto=produto_obj, quantidade=item['quantidade'], preco=produto_obj.preco)
+                ItemPedido.objects.create(
+                    pedido=pedido,
+                    produto=produto_obj,
+                    quantidade=item['quantidade'],
+                    preco=produto_obj.preco
+                )
 
         pedido.total = sum(i.produto.preco * i.quantidade for i in pedido.itens.all())
         pedido.save()
@@ -64,11 +71,15 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
         if itens:
             pedido.itens.all().delete()
             for item in itens:
-                item['preco'] = item['produto'].preco
+                produto_obj = item['produto']
+                if not isinstance(produto_obj, Produto):
+                    produto_obj = Produto.objects.get(pk=produto_obj.id if hasattr(produto_obj, 'id') else produto_obj)
+
+                item['preco'] = produto_obj.preco
+                item['produto'] = produto_obj
                 ItemPedido.objects.create(pedido=pedido, **item)
 
         pedido.save()
-
         return super().update(pedido, validated_data)
 
 
