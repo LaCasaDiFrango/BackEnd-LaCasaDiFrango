@@ -21,9 +21,9 @@ class PedidoViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':
             return PedidoListSerializer
-        if self.action in ['retrieve', 'update', 'partial_update']:
+        if self.action == 'retrieve':
             return PedidoSerializer
-        if self.action == 'create':
+        if self.action in ['create', 'update', 'partial_update']:
             return PedidoCreateUpdateSerializer
         return PedidoSerializer
 

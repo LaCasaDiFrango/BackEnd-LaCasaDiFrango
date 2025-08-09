@@ -1,4 +1,4 @@
-from rest_framework.serializers import (ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField, DateTimeField)
+from rest_framework.serializers import (ModelSerializer, CharField, SerializerMethodField, CurrentUserDefault, HiddenField, DateTimeField, IntegerField)
 from core.models.pedido.pedido import Pedido
 from core.models.produto.produto import Produto
 from core.models.pedido.item_pedido import ItemPedido
@@ -7,7 +7,7 @@ from django.db import transaction
 
 class PedidoSerializer(ModelSerializer):
     usuario = CharField(source='usuario.email', read_only=True)
-    status = CharField(source='get_status_display', read_only=True)
+    status = CharField(source='get_status_display', read_only=False)
     data_de_retirada = DateTimeField(read_only=True)
     itens = ItemPedidoSerializer(many=True, read_only=True)
     total = SerializerMethodField()
@@ -22,8 +22,8 @@ class PedidoSerializer(ModelSerializer):
 
 class PedidoCreateUpdateSerializer(ModelSerializer):
     usuario = HiddenField(default=CurrentUserDefault())
-    itens = ItemPedidoCreateUpdateSerializer(many=True)
-    status = CharField(required=False, default=Pedido.StatusCompra.CARRINHO)
+    itens = ItemPedidoCreateUpdateSerializer(many=True, required=False)
+    status = IntegerField(required=False, default=Pedido.StatusCompra.CARRINHO)
 
     class Meta:
         model = Pedido
@@ -68,8 +68,11 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
     def update(self, pedido, validated_data):
         itens = validated_data.pop('itens', [])
 
+    # Atualiza o pedido com os dados (menos os itens)
+        pedido_atualizado = super().update(pedido, validated_data)
+
         if itens:
-            pedido.itens.all().delete()
+            pedido_atualizado.itens.all().delete()
             for item in itens:
                 produto_obj = item['produto']
                 if not isinstance(produto_obj, Produto):
@@ -77,10 +80,11 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
 
                 item['preco'] = produto_obj.preco
                 item['produto'] = produto_obj
-                ItemPedido.objects.create(pedido=pedido, **item)
+                ItemPedido.objects.create(pedido=pedido_atualizado, **item)
 
-        pedido.save()
-        return super().update(pedido, validated_data)
+        pedido_atualizado.save()
+        return pedido_atualizado
+
 
 
 class PedidoListSerializer(ModelSerializer):
