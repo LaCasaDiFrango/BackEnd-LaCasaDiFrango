@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from core.models.usuario.user import User
 
 class IsPedidoOwnerOrAdmin(BasePermission):
     """
@@ -33,10 +34,6 @@ class IsPedidoOwnerOrAdmin(BasePermission):
 
 
 class IsOwnerOrAdmin(BasePermission):
-    """
-    Permite acesso se o objeto for do usuário autenticado
-    ou se o usuário for administrador (perfil ou grupo).
-    """
     def has_object_permission(self, request, view, obj):
         user = request.user
         print(f'[DEBUG IsOwnerOrAdmin] Usuário: {user}, Autenticado: {user.is_authenticated if user else "None"}')
@@ -52,7 +49,12 @@ class IsOwnerOrAdmin(BasePermission):
         )
         print(f'[DEBUG IsOwnerOrAdmin] is_admin: {is_admin}')
         
-        is_owner = getattr(obj, 'usuario', None) == user
+        # Se o obj for um User, compara diretamente
+        if isinstance(obj, User):
+            is_owner = obj == user
+        else:
+            is_owner = getattr(obj, 'usuario', None) == user
+
         print(f'[DEBUG IsOwnerOrAdmin] is_owner: {is_owner}')
         
         result = is_admin or is_owner
