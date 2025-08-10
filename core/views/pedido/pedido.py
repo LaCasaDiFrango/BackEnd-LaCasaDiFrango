@@ -46,15 +46,18 @@ class PedidoViewSet(ModelViewSet):
     def finalizar(self, request, pk=None):
         pedido = self.get_object()
 
+        # Verifica permissão
         if pedido.usuario != request.user and not request.user.is_superuser:
             return Response(
                 {'detail': 'Você não tem permissão para finalizar este pedido.'},
                 status=status.HTTP_403_FORBIDDEN
             )
+        
 
-        if pedido.status != Pedido.StatusCompra.CARRINHO:
+    # Altere a verificação para aceitar somente pedidos com status PAGO
+        if pedido.status != Pedido.StatusCompra.PAGO:  # Usando a constante correta do seu model
             return Response(
-                {'status': 'pedido já finalizado'},
+                {'status': 'Pedido só pode ser finalizado se estiver no status PAGO.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -72,11 +75,12 @@ class PedidoViewSet(ModelViewSet):
                 item.produto.quantidade_em_estoque -= item.quantidade
                 item.produto.save()
 
-            pedido.status = Pedido.StatusCompra.FINALIZADO
+            pedido.status = Pedido.StatusCompra.FINALIZADO  # Ou o status que representa finalizado no seu model
             pedido.save()
 
         serializer = self.get_serializer(pedido)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     @action(detail=False, methods=['get'])
     def relatorio_vendas_mes(self, request):
