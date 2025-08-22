@@ -6,3 +6,9 @@ class EnderecoSerializer(ModelSerializer):
     class Meta:
         model = Endereco
         fields = '__all__'
+
+class EnderecoRetrieveSerializer(ModelSerializer):
+    class Meta:
+        model = Endereco
+        fields = "__all__"
+        depth = 1

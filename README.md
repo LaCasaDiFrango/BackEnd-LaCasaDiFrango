@@ -1,97 +1,180 @@
-# Template de projeto Django com DRF e PDM
 
-Esse é um template de projeto Django com DRF, PDM e muito mais. Ele já vem com algumas configurações e pacotes pré-instalados, como o PDM, Django, Django REST Framework, PostgreSQL, SQLite, Swagger, black, isort, Render, Cloudinary, Corsheaders, Django-Extensions, Django-Filter, dotenv, dj-database-url, drf-spectacular, gunicorn, netifaces, rest-framework-simplejwt, whitenoise e passage.id
+# 🍗 La Casa Di Frango – Backend API
 
-Esse template já está pronto para ser utilizado em produção, com o [Render](http://render.com) e o [PostgreSQL](https://www.postgresql.org/). Mas também pode ser utilizado em desenvolvimento, com o [PDM](https://pdm.fming.dev/) e o [SQLite](https://www.sqlite.org/index.html).
+Backend desenvolvido em Django + Django REST Framework para gerenciamento de pedidos, produtos, pagamentos e usuários do sistema **La Casa Di Frango**.
 
-O template também já vem com alguns arquivos de configuração pré-configurados, como:
+> Projeto acadêmico com estrutura de produção, autenticação com Passage ID, suporte a múltiplas formas de pagamento e filtros dinâmicos de produtos.
 
-- `pyproject.toml`: Arquivo de configuração do PDM.
-- `Procfile`: Arquivo de configuração do Fl0.
-- `settings.py`: Arquivo de configuração do Django.
-- `urls.py`: Arquivo de configuração das rotas do Django.
-- `wsgi.py`: Arquivo de configuração do Gunicorn.
-- `.env.exemplo`: Arquivo de exemplo de configuração das variáveis de ambiente.
-- `.gitignore`: Arquivo de configuração do Git, para ignorar arquivos e diretórios.
+---
 
-O template também traz o usuário padrão modificado, com o login sendo feito com o `e-mail` e não com o `username`. Inclusões de campos, como `telefone`, `data de nascimento` e `foto de perfil`, podem ser feitas facilmente.
+## 🚀 Funcionalidades Implementadas
 
-O projeto Django criado chama-se `app` e a aplicação Django criada chama-se `core`. O projeto já vem com um modelo de usuário customizado, com autenticação pelo `passage.id`. Arquivos estáticos, como fotos, podem ser armazenados no [Cloudinary](https://cloudinary.com/).
+* 🔐 Autenticação e cadastro com [Passage ID](https://passage.id/)
+* 📟 CRUD de usuários, endereços e cartões
+* 📦 Catálogo de produtos com categorias, busca e filtros
+* 🛒 Carrinho de compras (pedidos em aberto)
+* ✅ Finalização de pedidos com validação de estoque
+* 💰 Pagamento vinculado ao pedido
+* 📈 Relatório de vendas mensais
+* 📊 Produtos mais vendidos
+* 🔒 Sistema de permissões personalizado com grupos (administradores, usuários, convidados)
+* 🔐 Controle de acesso para garantir que usuários só acessem/modifiquem seus próprios dados
+* 📚 Documentação automática da API com Swagger e Redoc
 
-O projeto também já vem com a documentação da API, gerada automaticamente pelo Swagger, e com a formatação de código Python, feita pelo black e pelo isort.
+---
 
-## Instalação e Configuração
+## 🛠️ Tecnologias Utilizadas
 
-1. Certifique-se de ter o [Python](https://www.python.org/) instalado em seu sistema.
+* Django  
+* Django REST Framework  
+* PostgreSQL (produção) / SQLite (dev)  
+* Passage ID (autenticação)  
+* Swagger / drf-spectacular (documentação da API)  
+* Cloudinary (armazenamento de imagens)  
+* Django-filter, Django-extensions, Corsheaders, Whitenoise  
+* Render (deploy)  
+* PDM (gerenciador de pacotes)  
 
-2. Crie um novo projeto a partir desse template:
-- Acesse o _template_ em https://github.com/marrcandre/template_django_pdm.
-- Clique no botão `Use this template` em `Create a new repository`.
-- Preencha as informações solicitadas:
-  - `Owner`: <seu usuário no GitHub>
-  - `Repository name`: `livraria`
-- Click no botão `Create repository`.
+---
 
-3. Abra o projeto no vscode e execute o terminal.
+## 📁 Estrutura de Pastas
 
-2. Crie um ambiente virtual usando o [PDM](https://pdm.fming.dev/):
+```
+app/
+├── settings.py
+└── urls.py
+core/
+├── models/
+│   ├── pedido/
+│   ├── produto/
+│   ├── usuario/
+│   └── pagamento/
+├── serializers/
+│   ├── pedido/
+│   ├── produto/
+│   ├── usuario/
+│   └── pagamento/
+├── views/
+│   ├── pedido/
+│   ├── produto/
+│   ├── usuario/
+│   └── pagamento/ 
+├── admin.py
+└── authentication.py
+...
+```
 
-   ```
-   pdm install
-   ```
+---
 
-3. Crie o arquivo .env, a partir do arquivo .env.exemplo, e configure as variáveis de ambiente:
+## 📦 Endpoints Principais
 
-   ```
-   cp .env.exemplo .env
-   ```
+Acesse a documentação completa em: [`/api/schema/swagger-ui`](http://localhost:19003/api/schema/swagger-ui/)
 
-4. Execute o servidor de desenvolvimento:
+Exemplos:
 
-   ```
-   pdm run dev
-   ```
+### 🔐 Autenticação
 
-5. Acesse a API em http://localhost:19003/api/
+* `GET /api/users/me/` → Retorna o usuário autenticado
 
-## Uso da API
+### 📦 Produtos
 
-A documentação completa dos endpoints da API e exemplos de uso estão disponíveis na [Documentação da API](http://localhost:19003/api/swagger/).
+* `GET /api/produtos/` → Lista com filtros, busca e ordenação  
+* `PATCH /api/produtos/{id}/alterar_preco/` → Altera o preço  
+* `POST /api/produtos/{id}/ajustar_estoque/` → Ajusta estoque  
+* `GET /api/produtos/mais_vendidos/` → Lista produtos mais vendidos  
 
-## Comandos Úteis
+### 🛒 Pedidos
 
-- `pdm run dev`: Executa o servidor de desenvolvimento. Antes de executar o servidor, descobre o endereço IP da máquina e atualiza o arquivo `.env` com o endereço IP.
-- `pdm run migrate`: Executa as migrações do banco de dados. Antes de executar o `migrate`, executa o `makemigrations`. Depois de executar o `migrate`, executa o `graph_models`, atualizando o diagrama de classes dos modelos do projeto.
-- Para mais detalhes, consulte o arquivo `pyproject.toml`, na seção `[tool.pdm.scripts]`.
+* `POST /api/pedidos/` → Criação de pedido  
+* `POST /api/pedidos/{id}/finalizar/` → Finaliza pedido (valida estoque)  
+* `GET /api/pedidos/relatorio_vendas_mes/` → Relatório de vendas  
 
-## Detalhes do Projeto
+### 📟 Pagamentos
 
-Esse projeto utiliza os seguintes pacotes e tecnologias:
+* `POST /api/pagamentos/` → Associa método de pagamento ao pedido  
 
-- [PDM](https://pdm.fming.dev/): Gerenciador de pacotes e ambiente virtual para Python.
-- [Django](https://www.djangoproject.com/): Framework web de alto nível escrito em Python.
-- [Django REST Framework](https://www.django-rest-framework.org/): Framework para desenvolvimento de APIs REST com Django.
-- [PostgreSQL](https://www.postgresql.org/): Banco de dados relacional, utilizado no ambiente de produção.
-- [SQLite](https://www.sqlite.org/index.html): Banco de dados relacional, utilizado no ambiente de desenvolvimento.
-- [Swagger](https://swagger.io/): Framework para documentação de APIs REST.
-- [Ruff] (http://https://docs.astral.sh/ruff/): Linter e formatador de código Python, escrito em Rust.
-- [Render](http://render.com): Ferramenta de _deploy_ de aplicações _backend_.
-- [Cloudinary](https://cloudinary.com/): Serviço de armazenamento de arquivos estáticos em nuvem.
-- [Corsheaders](https://pypi.org/project/django-cors-headers/): Pacote para permitir que aplicações frontend acessem a API.
-- [Django-Extensions](https://django-extensions.readthedocs.io/en/latest/): Pacote com extensões para o Django, como o `shell_plus`, que permite acessar o shell do Django com todos os modelos importados e o comando `graph_models`, que gera um diagrama de classes dos modelos do projeto.
-- [Django-Filter](https://django-filter.readthedocs.io/en/stable/): Pacote para filtragem, ordenação e paginação de dados em APIs REST.
-- [dotenv](https://pypi.org/project/python-dotenv/): Pacote para carregar variáveis de ambiente a partir de um arquivo `.env`.
-- [dj-database-url](https://pypi.org/project/dj-database-url/): Pacote para configurar o banco de dados a partir de uma URL.
-- [drf-spectacular](https://drf-spectacular.readthedocs.io/en/latest/): Pacote para geração de documentação de APIs REST com o Swagger.
-- [gunicorn](https://gunicorn.org/): Pacote para servir aplicações Django em produção.
-- [netifaces](https://pypi.org/project/netifaces/): Pacote para obter o endereço IP da máquina.
-- [rest-framework-simplejwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/): Pacote para autenticação JWT em APIs REST.
-- [whitenoise](http://whitenoise.evans.io/en/stable/): Pacote para servir arquivos estáticos em aplicações Django.
-- [passage.id](https://passage.id): Pacote para autenticação de usuários.
+### 👤 Usuário
 
-## Licença
+* `GET /api/users/` → Lista usuários (admin)  
+* `GET /api/users/me/` → Dados do usuário logado  
 
-Este projeto está licenciado sob a [Licença GPL](https://www.gnu.org/licenses/gpl-3.0.html), uma licença de software livre.
+---
+
+## 🔐 Permissões e Controle de Acesso
+
+O backend utiliza grupos e permissões personalizadas para controle de acesso:
+
+- Grupos configurados:
+  - `administradores` — acesso completo para gestão do sistema  
+  - `usuarios` — consumidores que podem criar pedidos e gerenciar seus dados  
+  - `convidados` — acesso somente leitura para dados públicos  
+
+- Permissões customizadas aplicadas nas views, como:
+  - **IsOwnerOrAdmin** — garante que só o dono do recurso ou administrador tenha acesso para leitura e escrita  
+  - **IsGuestOrReadOnly** — permite leitura pública, mas restringe modificações para usuários autenticados  
+  - Validações extras para proteger contra acessos indevidos via manipulação direta de IDs  
+
+---
+
+## 📚 Documentação da API
+
+A API está documentada automaticamente com OpenAPI 3 via drf-spectacular, facilitando o uso, teste e manutenção:
+
+- **Swagger UI** (interface interativa para testar endpoints):  
+  `/api/swagger/`
+
+- **Redoc UI** (documentação legível e organizada):  
+  `/api/redoc/`
+
+- **Schema JSON OpenAPI:**  
+  `/api/schema/`
+
+---
+
+## ⚙️ Como Rodar o Projeto Localmente
+
+1. Instale [Python 3.11+](https://www.python.org/) e [PDM](https://pdm.fming.dev/):
+
+```bash
+pip install pdm
+```
+
+2. Clone o repositório e instale dependências:
+
+```bash
+pdm install
+```
+
+3. Copie o `.env.exemplo` para `.env` e configure as variáveis:
+
+```bash
+cp .env.exemplo .env
+```
+
+4. Execute as migrações e inicie o servidor:
+
+```bash
+pdm run migrate
+pdm run dev
+```
+
+5. Acesse a API:
+
+- API: [http://localhost:19003/api/](http://localhost:19003/api/)  
+- Swagger: [http://localhost:19003/api/swagger/](http://localhost:19003/api/swagger/)  
+- Redoc: [http://localhost:19003/api/redoc/](http://localhost:19003/api/redoc/)  
+
+---
+
+## 📌 Comandos Úteis
+
+* `pdm run dev` – Executa o servidor local  
+* `pdm run migrate` – Aplica migrações do banco de dados  
+* `pdm run createsu` – Cria superusuário (configurado no `pyproject.toml`)  
+
+---
 
 
+## 📄 Licença
 
+Distribuído sob licença [GPL](https://www.gnu.org/licenses/gpl-3.0.html).

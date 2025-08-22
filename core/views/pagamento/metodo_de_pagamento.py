@@ -2,12 +2,13 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAdminUser, IsGuestOrReadOnly
 from rest_framework.viewsets import ModelViewSet
 
-from core.models.produto.categoria import Categoria
-from core.serializers.produto.categoria import CategoriaSerializer
+from core.models.pagamento.metodo_de_pagamento import MetodoDePagamento
+from core.serializers.pagamento.metodo_de_pagamento import MetodoDePagamentoSerializer
 
-class CategoriaViewSet(ModelViewSet):
-    queryset = Categoria.objects.all()
-    serializer_class = CategoriaSerializer
+
+class MetodoDePagamentoViewSet(ModelViewSet):
+    queryset = MetodoDePagamento.objects.all()
+    serializer_class = MetodoDePagamentoSerializer
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:

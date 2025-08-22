@@ -11,6 +11,10 @@ from core.models.usuario.endereco import Endereco
 from core.models.usuario.cartao import Cartao
 from core.models.produto.produto import Produto
 from core.models.produto.categoria import Categoria
+from core.models.pedido.pedido import Pedido
+from core.models.pedido.item_pedido import ItemPedido
+from core.models.pagamento.pagamento import Pagamento
+from core.models.pagamento.metodo_de_pagamento import MetodoDePagamento
 
 
 class UserAdmin(BaseUserAdmin):
@@ -20,7 +24,7 @@ class UserAdmin(BaseUserAdmin):
     list_display = ['email', 'name']
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        (_('Personal Info'), {'fields': ('name', 'passage_id')}),
+        (_('Personal Info'), {'fields': ('name',)}),
         (
             _('Permissions'),
             {
@@ -80,3 +84,29 @@ class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nome','descricao')
     search_fields = ('nome',)
     list_filter = ('nome',)
+
+class ItemPedidoInline(admin.TabularInline):
+    model = ItemPedido
+    extra = 1 
+
+@admin.register(Pedido)
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ( 'usuario','status', 'data_de_retirada',)
+    search_fields = ( 'usuario','status', 'data_de_retirada',)
+    list_filter = ( 'usuario','status', 'data_de_retirada',)
+    ordering = ( 'usuario','status', 'data_de_retirada',)
+    list_per_page = 10
+    inlines = [ItemPedidoInline]
+
+
+@admin.register(Pagamento)
+class PagamentoAdmin(admin.ModelAdmin):
+    list_display = ('pedido',)
+    search_fields = ('pedido__id', )
+    list_filter = ('pedido',)
+
+@admin.register(MetodoDePagamento)
+class MetodoDePagamentoAdmin(admin.ModelAdmin):
+    list_display = ('cartao',)
+    search_fields = ('cartao',)
+    list_filter = ('cartao',)
