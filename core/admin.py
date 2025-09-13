@@ -75,7 +75,7 @@ class CartaoAdmin(admin.ModelAdmin):
 
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'preco', 'quantidade_em_estoque')
+    list_display = ('nome', 'preco', 'quantidade_em_estoque', 'imagem_url')
     search_fields = ('nome',)
     list_filter = ('categoria',)
 

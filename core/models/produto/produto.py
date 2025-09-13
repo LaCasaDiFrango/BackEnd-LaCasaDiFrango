@@ -6,6 +6,7 @@ class Produto(models.Model):
     descricao = models.TextField(verbose_name='Descrição do Produto', default="")
     quantidade_em_estoque = models.PositiveIntegerField(verbose_name='Quantidade em Estoque', default=0)
     categoria = models.ForeignKey('Categoria', on_delete=models.PROTECT, null=True, blank=True, related_name='produtos', verbose_name='Categoria', help_text='Categoria do produto')
+    imagem_url = models.URLField(max_length=500, blank=True, null=True)  
 
 
     def __str__(self):
