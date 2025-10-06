@@ -11,7 +11,7 @@ from rest_framework.serializers import (
 class ProdutoPedidoSerializer(ModelSerializer):
     class Meta:
         model = Produto
-        fields = ('id', 'nome', 'preco', 'quantidade_em_estoque')
+        fields = ('id', 'nome', 'preco', 'quantidade_em_estoque', 'imagem')
 
 # Atualizado: agora inclui detalhes do produto no retorno
 class ItemPedidoSerializer(ModelSerializer):
