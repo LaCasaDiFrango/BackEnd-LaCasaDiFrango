@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, Serializer, DecimalField, IntegerField, ValidationError
-
+from rest_framework import serializers
 from core.models.produto.produto import Produto
 
 class ProdutoSerializer(ModelSerializer):
@@ -37,3 +37,10 @@ class ProdutoAjustarEstoqueSerializer(Serializer):
             if nova_quantidade < 0:
                 raise ValidationError('A quantidade em estoque não pode ser negativa.')
         return value
+
+class TopProdutoSerializer(serializers.ModelSerializer):
+    total_vendido = serializers.IntegerField()  # campo calculado no queryset
+
+    class Meta:
+        model = Produto
+        fields = ['id', 'nome', 'preco', 'total_vendido']
