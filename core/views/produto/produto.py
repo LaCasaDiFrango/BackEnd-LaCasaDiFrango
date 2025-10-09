@@ -2,11 +2,12 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models.functions import Coalesce
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from core.models.produto.produto import Produto
-from core.serializers.produto.produto import (ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer, ProdutoAlterarPrecoSerializer, ProdutoAjustarEstoqueSerializer)
+from core.serializers.produto.produto import (ProdutoSerializer, ProdutoListSerializer, ProdutoRetrieveSerializer, ProdutoAlterarPrecoSerializer, ProdutoAjustarEstoqueSerializer, TopProdutoSerializer)
 from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAdminUser, IsGuestOrReadOnly
 
@@ -68,15 +69,9 @@ class ProdutoViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def mais_vendidos(self, request):
-        produtos = Produto.objects.annotate(total_vendidos=Sum('itenscompra__quantidade')).filter(total_vendidos__gt=10)
+        produtos = Produto.objects.annotate(
+            total_vendido=Coalesce(Sum('itens__quantidade'), 0)
+        ).order_by('-total_vendido')[:10]
 
-        data = [
-            {
-                'id': produto.id,
-                'nome': produto.nome,
-                'total_vendidos': produto.total_vendidos,
-            }
-            for produto in produtos
-        ]
-
-        return Response(data, status=status.HTTP_200_OK)
+        serializer = TopProdutoSerializer(produtos, many=True)
+        return Response(serializer.data)
