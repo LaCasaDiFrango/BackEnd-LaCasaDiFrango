@@ -20,13 +20,14 @@ ALLOWED_HOSTS = [
     'backend-lacasadifrango.onrender.com',
     'localhost',
     '127.0.0.1',
-    'https://lacasadifrango-api.fabricadesoftware.ifc.edu.br',
+    'lacasadifrango-api.fabricadesoftware.ifc.edu.br',
 ]
 
 # 🚫 Domínios confiáveis para CSRF e CORS
 CSRF_TRUSTED_ORIGINS = [
     'https://lacasadifrango.vercel.app',
     'https://lacasadifrango.fabricadesoftware.ifc.edu.br',
+    'https://lacasadifrango-api.fabricadesoftware.ifc.edu.br',
 ]
 
 # Adiciona localhost em modo de desenvolvimento
