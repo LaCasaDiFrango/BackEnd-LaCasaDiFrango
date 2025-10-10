@@ -68,10 +68,12 @@ MIDDLEWARE = [
 ]
 
 # Configuração do CORS
+# Configuração do CORS
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     'https://lacasadifrango.vercel.app',
-    'https://localhost:5173',
+    'https://lacasadifrango.fabricadesoftware.ifc.edu.br',
+    'https://lacasadifrango-api.fabricadesoftware.ifc.edu.br',
 ]
 
 if MODE in ['DEVELOPMENT', 'MIGRATE']:
@@ -85,6 +87,18 @@ if MODE in ['DEVELOPMENT', 'MIGRATE']:
     ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+if MODE in ['DEVELOPMENT', 'MIGRATE']:
+    CSRF_TRUSTED_ORIGINS += [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ]
+    CORS_ALLOWED_ORIGINS += [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ]
+
 
 # URLs e Templates
 ROOT_URLCONF = 'app.urls'
