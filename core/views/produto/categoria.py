@@ -5,14 +5,23 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from core.models.pedido.item_pedido import ItemPedido
 from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 from core.models.produto.categoria import Categoria
-from core.models.produto.produto import Produto
 from core.serializers.produto.categoria import CategoriaSerializer
+from app.pagination import CustomPagination
+
 
 class CategoriaViewSet(ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
+    pagination_class = CustomPagination 
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['descricao']
+    search_fields = ['nome', 'descricao']
+    ordering_fields = ['nome']
+    ordering = ['nome']
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -21,7 +30,6 @@ class CategoriaViewSet(ModelViewSet):
             return [IsGuestOrReadOnly()]
         return super().get_permissions()
 
-    # NOVO: endpoint para vendas por categoria
     @action(detail=False, methods=['get'], url_path='vendas')
     def vendas(self, request):
         categorias = Categoria.objects.all()
