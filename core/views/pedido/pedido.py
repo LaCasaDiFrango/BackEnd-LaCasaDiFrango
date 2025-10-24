@@ -1,7 +1,8 @@
+from rest_framework import status, filters
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
 
@@ -11,13 +12,20 @@ from core.models.pedido.item_pedido import ItemPedido
 from core.serializers.pedido.pedido import (
     PedidoSerializer,
     PedidoCreateUpdateSerializer,
-    PedidoListSerializer
+    PedidoListSerializer,
 )
-
 from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAdminUser, IsOwnerOrAdmin
+from app.pagination import CustomPagination
+
 
 class PedidoViewSet(ModelViewSet):
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status', 'usuario']
+    search_fields = ['usuario__username', 'usuario__email']
+    ordering_fields = ['data_de_retirada', 'total']
+
     def get_serializer_class(self):
         if self.action == 'list':
             return PedidoListSerializer
@@ -28,9 +36,9 @@ class PedidoViewSet(ModelViewSet):
         return PedidoSerializer
 
     def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update', 'destroy', 'remover_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
-        if self.action in ['relatorio_vendas_mes', 'remover_item']:
+        if self.action in ['relatorio_vendas_mes']:
             return [IsAuthenticated(), IsAdminUser()]
         if self.action in ['finalizar', 'adicionar_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
