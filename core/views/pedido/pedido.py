@@ -36,9 +36,9 @@ class PedidoViewSet(ModelViewSet):
         return PedidoSerializer
 
     def get_permissions(self):
-        if self.action in ['update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update', 'destroy', 'remover_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
-        if self.action in ['relatorio_vendas_mes', 'remover_item']:
+        if self.action in ['relatorio_vendas_mes']:
             return [IsAuthenticated(), IsAdminUser()]
         if self.action in ['finalizar', 'adicionar_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
