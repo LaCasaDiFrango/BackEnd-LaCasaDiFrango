@@ -11,6 +11,7 @@ class Pedido(models.Model):
     data_de_retirada = models.DateTimeField(verbose_name='Data de Validade do Pedido', auto_now_add=True)
     status = models.IntegerField(choices=StatusCompra.choices, default=StatusCompra.CARRINHO)
     usuario = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pedidos', null=True, blank=True)
+    identificador = models.CharField(max_length=100, null=True, blank=True) 
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # novo campo
 
     def __str__(self):
