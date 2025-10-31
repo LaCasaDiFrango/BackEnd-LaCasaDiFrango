@@ -17,8 +17,8 @@ class UserViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['is_active', 'groups__name']
-    search_fields = ['username', 'email', 'first_name', 'last_name']
-    ordering_fields = ['id', 'username', 'email', 'date_joined']
+    search_fields = ['name', 'email']
+    ordering_fields = ['id', 'name', 'email', 'date_joined']
     ordering = ['id']
 
     def get_serializer_class(self):

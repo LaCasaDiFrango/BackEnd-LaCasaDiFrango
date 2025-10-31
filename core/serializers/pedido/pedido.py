@@ -27,38 +27,47 @@ class PedidoSerializer(ModelSerializer):
 
     class Meta:
         model = Pedido
-        fields = ('id', 'usuario', 'status', 'total', 'itens', 'data_de_retirada')
+        fields = ('id', 'usuario', 'status', 'total', 'itens', 'data_de_retirada', 'identificador')
 
 
 class PedidoCreateUpdateSerializer(ModelSerializer):
     usuario = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        required=False,  # opcional
+        required=False,
         default=CurrentUserDefault()
     )
     itens = ItemPedidoCreateUpdateSerializer(many=True, required=False)
     status = IntegerField(required=False, default=Pedido.StatusCompra.CARRINHO)
+    identificador = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Pedido
-        fields = ('usuario', 'itens', 'status')
+        fields = ('usuario', 'itens', 'status', 'identificador')
 
     @transaction.atomic
     def create(self, validated_data):
         itens = validated_data.pop('itens', [])
         usuario = validated_data.pop('usuario', None)
         status = validated_data.pop('status', Pedido.StatusCompra.CARRINHO)
+        identificador = validated_data.pop('identificador', None)
 
-        # Se não passar usuário, pega o usuário autenticado
         if usuario is None:
             usuario = self.context['request'].user
 
+        # Cria o pedido inicialmente
         pedido = Pedido.objects.create(
             usuario=usuario,
             status=status,
+            identificador=identificador,
             **validated_data
         )
 
+        # Gera identificador automático se estiver vazio
+        if not pedido.identificador:
+            pedido.identificador = f"Pedido #{pedido.id}"
+            pedido.save(update_fields=["identificador"])
+
+        # Cria os itens do pedido
         for item in itens:
             produto_obj = item['produto']
             if not isinstance(produto_obj, Produto):
@@ -75,16 +84,19 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
 
         # Atualiza o total do pedido
         pedido.total = sum(i.produto.preco * i.quantidade for i in pedido.itens.all())
-        pedido.save()
-
+        pedido.save(update_fields=["total", "identificador"])
         return pedido
 
     @transaction.atomic
     def update(self, pedido, validated_data):
         itens = validated_data.pop('itens', [])
+        identificador = validated_data.pop('identificador', None)
 
-        # Atualiza os campos restantes do pedido
         pedido_atualizado = super().update(pedido, validated_data)
+
+        # Atualiza identificador (mantém ou gera se vazio)
+        if identificador is not None:
+            pedido_atualizado.identificador = identificador or f"Pedido #{pedido_atualizado.id}"
 
         if itens:
             pedido_atualizado.itens.all().delete()
@@ -94,11 +106,15 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
                     produto_obj = Produto.objects.get(
                         pk=produto_obj.id if hasattr(produto_obj, 'id') else produto_obj
                     )
-                item['preco'] = produto_obj.preco
-                item['produto'] = produto_obj
-                ItemPedido.objects.create(pedido=pedido_atualizado, **item)
+                ItemPedido.objects.create(
+                    pedido=pedido_atualizado,
+                    produto=produto_obj,
+                    quantidade=item['quantidade'],
+                    preco=produto_obj.preco
+                )
 
-        pedido_atualizado.save()
+        pedido_atualizado.total = sum(i.quantidade * i.preco for i in pedido_atualizado.itens.all())
+        pedido_atualizado.save(update_fields=["total", "identificador"])
         return pedido_atualizado
 
 
