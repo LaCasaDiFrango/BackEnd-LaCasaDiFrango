@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.utils.timezone import now
 
 from core.models.pedido.pedido import Pedido
 from core.models.produto.produto import Produto
@@ -54,16 +58,13 @@ class PedidoViewSet(ModelViewSet):
     def finalizar(self, request, pk=None):
         pedido = self.get_object()
 
-        # Verifica permissão
         if pedido.usuario != request.user and not request.user.is_superuser:
             return Response(
                 {'detail': 'Você não tem permissão para finalizar este pedido.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
-
-    # Altere a verificação para aceitar somente pedidos com status PAGO
-        if pedido.status != Pedido.StatusCompra.PAGO:  # Usando a constante correta do seu model
+        if pedido.status != Pedido.StatusCompra.PAGO:
             return Response(
                 {'status': 'Pedido só pode ser finalizado se estiver no status PAGO.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -83,12 +84,11 @@ class PedidoViewSet(ModelViewSet):
                 item.produto.quantidade_em_estoque -= item.quantidade
                 item.produto.save()
 
-            pedido.status = Pedido.StatusCompra.FINALIZADO  # Ou o status que representa finalizado no seu model
+            pedido.status = Pedido.StatusCompra.FINALIZADO
             pedido.save()
 
         serializer = self.get_serializer(pedido)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     @action(detail=False, methods=['get'])
     def relatorio_vendas_mes(self, request):
@@ -97,7 +97,7 @@ class PedidoViewSet(ModelViewSet):
 
         pedidos = Pedido.objects.filter(
             status=Pedido.StatusCompra.FINALIZADO,
-            data__gte=inicio_mes
+            data_criacao__gte=inicio_mes
         )
 
         total_vendas = sum(pedido.total for pedido in pedidos)
@@ -181,3 +181,30 @@ class PedidoViewSet(ModelViewSet):
         pedido.save()
 
         return Response({'detail': 'Item removido com sucesso.'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='ultimos-7-dias')
+    def pedidos_ultimos_7_dias(self, request):
+        """Retorna o total de pedidos criados em cada um dos últimos 7 dias."""
+        hoje = now()
+        sete_dias_atras = hoje - timedelta(days=6)
+
+        # Agrupa os pedidos por dia da data_criacao
+        pedidos_por_dia = (
+            Pedido.objects.filter(data_criacao__date__gte=sete_dias_atras.date())
+            .annotate(dia=TruncDate('data_criacao'))
+            .values('dia')
+            .annotate(total=Count('id'))
+            .order_by('dia')
+        )
+
+        # Garante que todos os 7 dias apareçam, mesmo com total 0
+        dias_completos = []
+        for i in range(7):
+            dia = (sete_dias_atras + timedelta(days=i)).date()
+            registro = next((p for p in pedidos_por_dia if p['dia'] == dia), None)
+            dias_completos.append({
+                'dia': dia.isoformat(),
+                'total': registro['total'] if registro else 0
+            })
+
+        return Response(dias_completos, status=status.HTTP_200_OK)

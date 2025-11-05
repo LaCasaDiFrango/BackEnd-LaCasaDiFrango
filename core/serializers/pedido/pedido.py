@@ -19,6 +19,7 @@ class PedidoSerializer(ModelSerializer):
     usuario = CharField(source='usuario.email', read_only=True)
     status = CharField(source='get_status_display', read_only=False)
     data_de_retirada = DateTimeField(read_only=True)
+    data_criacao = DateTimeField(read_only=True)  # 🆕 Campo novo para o gráfico
     itens = ItemPedidoSerializer(many=True, read_only=True)
     total = SerializerMethodField()
 
@@ -27,7 +28,16 @@ class PedidoSerializer(ModelSerializer):
 
     class Meta:
         model = Pedido
-        fields = ('id', 'usuario', 'status', 'total', 'itens', 'data_de_retirada', 'identificador')
+        fields = (
+            'id',
+            'usuario',
+            'status',
+            'total',
+            'itens',
+            'data_de_retirada',
+            'data_criacao',      # 🆕 Incluído aqui
+            'identificador',
+        )
 
 
 class PedidoCreateUpdateSerializer(ModelSerializer):
@@ -54,7 +64,6 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
         if usuario is None:
             usuario = self.context['request'].user
 
-        # Cria o pedido inicialmente
         pedido = Pedido.objects.create(
             usuario=usuario,
             status=status,
@@ -62,12 +71,10 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
             **validated_data
         )
 
-        # Gera identificador automático se estiver vazio
         if not pedido.identificador:
             pedido.identificador = f"Pedido #{pedido.id}"
             pedido.save(update_fields=["identificador"])
 
-        # Cria os itens do pedido
         for item in itens:
             produto_obj = item['produto']
             if not isinstance(produto_obj, Produto):
@@ -82,7 +89,6 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
                 preco=produto_obj.preco
             )
 
-        # Atualiza o total do pedido
         pedido.total = sum(i.produto.preco * i.quantidade for i in pedido.itens.all())
         pedido.save(update_fields=["total", "identificador"])
         return pedido
@@ -94,7 +100,6 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
 
         pedido_atualizado = super().update(pedido, validated_data)
 
-        # Atualiza identificador (mantém ou gera se vazio)
         if identificador is not None:
             pedido_atualizado.identificador = identificador or f"Pedido #{pedido_atualizado.id}"
 

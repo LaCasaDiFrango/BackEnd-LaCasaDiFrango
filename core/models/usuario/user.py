@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 
 class PerfilChoices(models.TextChoices):
@@ -13,14 +14,14 @@ class PerfilChoices(models.TextChoices):
 
 
 class UserManager(BaseUserManager):
-    """Manager for users."""
+    """Manager para usuários."""
 
     use_in_migrations = True
 
     def create_user(self, email, password=None, perfil=PerfilChoices.USUARIO, **extra_fields):
-        """Create, save and return a new user."""
+        """Cria, salva e retorna um novo usuário."""
         if not email:
-            raise ValueError('Users must have an email address.')
+            raise ValueError('O usuário deve ter um endereço de email.')
 
         extra_fields.setdefault('perfil', perfil)
 
@@ -31,7 +32,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password):
-        """Create, save and return a new superuser."""
+        """Cria, salva e retorna um superusuário."""
         user = self.create_user(email, password, perfil=PerfilChoices.ADMIN)
         user.is_staff = True
         user.is_superuser = True
@@ -41,7 +42,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    """User model in the system."""
+    """Modelo de usuário do sistema."""
 
     passage_id = models.CharField(
         max_length=255, null=True, blank=True,
@@ -56,7 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(
         max_length=255, blank=True, null=True,
         verbose_name=_('name'),
-        help_text=_('Username')
+        help_text=_('Nome do usuário')
     )
     endereco = models.ForeignKey(
         'Endereco',
@@ -75,6 +76,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=PerfilChoices.USUARIO,
         verbose_name=_('perfil'),
         help_text=_('Tipo de perfil do usuário')
+    )
+
+    # Novo campo para armazenar a data do último pedido
+    ultimo_pedido = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name=_('Último pedido'),
+        help_text=_('Data do último pedido realizado pelo usuário')
     )
 
     objects = UserManager()
