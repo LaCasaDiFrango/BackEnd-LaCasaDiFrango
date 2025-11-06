@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use("Agg")  # BACKEND HEADLESS
+import matplotlib.pyplot as plt
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -10,14 +13,12 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.http import HttpResponse
 from django.db import models
-import matplotlib.pyplot as plt
 import io
 
 from core.models.usuario.user import User
 
 # Fonte compatível com acentuação
 pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'))
-
 
 # -----------------------------------------------------
 # Função auxiliar para gerar gráficos e retornar como imagem
@@ -61,7 +62,6 @@ def gerar_grafico_barras_top_usuarios():
 
 
 def gerar_grafico_linha_crescimento():
-    """Simula crescimento com base na quantidade de usuários ativos/inativos por mês."""
     hoje = timezone.now()
     meses = [(hoje - timedelta(days=30 * i)).strftime("%b/%y") for i in reversed(range(6))]
     contagens = []
@@ -69,7 +69,6 @@ def gerar_grafico_linha_crescimento():
     for i in reversed(range(6)):
         inicio = hoje - timedelta(days=30 * (i + 1))
         fim = hoje - timedelta(days=30 * i)
-        # usa ultimo_pedido como proxy de atividade
         count = User.objects.filter(ultimo_pedido__gte=inicio, ultimo_pedido__lt=fim).count()
         contagens.append(count)
 
@@ -88,12 +87,18 @@ def gerar_grafico_linha_crescimento():
 # Função principal de geração do PDF
 # -----------------------------------------------------
 def gerar_relatorio_usuarios(request=None):
+
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, title="Relatório de Usuários - La Casa Di Frango")
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        title="Relatório de Usuários - La Casa Di Frango"
+    )
 
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name="Resumo", fontSize=11, leading=14))
     styles.add(ParagraphStyle(name="Indicador", fontSize=14, leading=18, alignment=1))
+
     elements = []
 
     # -----------------------------------------------------
@@ -135,10 +140,12 @@ def gerar_relatorio_usuarios(request=None):
     media_pedidos = round(User.objects.aggregate(media=models.Avg('pedidos__id'))['media'] or 0, 1)
 
     elements.append(Paragraph("<b>Resumo Geral</b>", styles["Heading2"]))
+
     resumo = [
         ["Total", "Ativos", "Inativos", "Usuários Ativos no Mês", "Variação %", "Média Pedidos"],
         [total, ativos, inativos, novos_mes, f"{crescimento:.1f}%", media_pedidos]
     ]
+
     t = Table(resumo, hAlign='LEFT')
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#004080")),
@@ -172,6 +179,7 @@ def gerar_relatorio_usuarios(request=None):
     # TABELA DETALHADA
     # -----------------------------------------------------
     elements.append(Paragraph("<b>Lista Detalhada de Usuários</b>", styles["Heading2"]))
+
     colunas = ["ID", "Nome", "Email", "Ativo", "Perfil", "Último Pedido", "Último Login"]
     dados = []
 
@@ -184,6 +192,7 @@ def gerar_relatorio_usuarios(request=None):
             timezone.localtime(user.last_login).strftime('%d/%m/%Y %H:%M')
             if user.last_login else "—"
         )
+
         dados.append([
             user.id,
             user.name or "—",
@@ -207,7 +216,7 @@ def gerar_relatorio_usuarios(request=None):
     elements.append(PageBreak())
 
     # -----------------------------------------------------
-    # RODAPÉ INSTITUCIONAL
+    # RODAPÉ
     # -----------------------------------------------------
     elements.append(Paragraph(
         """
