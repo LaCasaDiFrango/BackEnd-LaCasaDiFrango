@@ -35,8 +35,9 @@ class PedidoSerializer(ModelSerializer):
             'total',
             'itens',
             'data_de_retirada',
-            'data_criacao',      # 🆕 Incluído aqui
+            'data_criacao',      
             'identificador',
+            'observacao',
         )
 
 
@@ -49,10 +50,12 @@ class PedidoCreateUpdateSerializer(ModelSerializer):
     itens = ItemPedidoCreateUpdateSerializer(many=True, required=False)
     status = IntegerField(required=False, default=Pedido.StatusCompra.CARRINHO)
     identificador = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    observacao = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
 
     class Meta:
         model = Pedido
-        fields = ('usuario', 'itens', 'status', 'identificador')
+        fields = ('usuario', 'itens', 'status', 'identificador', 'observacao')
 
     @transaction.atomic
     def create(self, validated_data):
