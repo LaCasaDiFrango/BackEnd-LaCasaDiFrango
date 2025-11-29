@@ -6,8 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Count
-from django.db.models.functions import TruncDate
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDate, TruncMonth
 from django.utils.timezone import now
 
 from core.models.pedido.pedido import Pedido
@@ -42,7 +42,7 @@ class PedidoViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy', 'remover_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
-        if self.action in ['relatorio_vendas_mes']:
+        if self.action in ['relatorio_vendas_mes', 'stats_total_vendas', 'stats_vendas_por_mes']:
             return [IsAuthenticated(), IsAdminUser()]
         if self.action in ['finalizar', 'adicionar_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
@@ -184,11 +184,9 @@ class PedidoViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='ultimos-7-dias')
     def pedidos_ultimos_7_dias(self, request):
-        """Retorna o total de pedidos criados em cada um dos últimos 7 dias."""
         hoje = now()
         sete_dias_atras = hoje - timedelta(days=6)
 
-        # Agrupa os pedidos por dia da data_criacao
         pedidos_por_dia = (
             Pedido.objects.filter(data_criacao__date__gte=sete_dias_atras.date())
             .annotate(dia=TruncDate('data_criacao'))
@@ -197,7 +195,6 @@ class PedidoViewSet(ModelViewSet):
             .order_by('dia')
         )
 
-        # Garante que todos os 7 dias apareçam, mesmo com total 0
         dias_completos = []
         for i in range(7):
             dia = (sete_dias_atras + timedelta(days=i)).date()
@@ -208,3 +205,46 @@ class PedidoViewSet(ModelViewSet):
             })
 
         return Response(dias_completos, status=status.HTTP_200_OK)
+
+    # ==========================================================
+    #           NOVOS ENDPOINTS PARA DASHBOARD
+    # ==========================================================
+
+    @action(detail=False, methods=['get'], url_path='stats/total-vendas')
+    def stats_total_vendas(self, request):
+        total = (
+            Pedido.objects
+            .filter(status__in=[
+                Pedido.StatusCompra.FINALIZADO,
+                Pedido.StatusCompra.PAGO,
+                Pedido.StatusCompra.ENTREGUE
+            ])
+            .aggregate(total_vendas=Sum("total"))
+        )["total_vendas"] or 0
+
+        return Response({"total_vendas": float(total)})
+
+    @action(detail=False, methods=['get'], url_path='stats/vendas-por-mes')
+    def stats_vendas_por_mes(self, request):
+        dados = (
+            Pedido.objects
+            .filter(status__in=[
+                Pedido.StatusCompra.FINALIZADO,
+                Pedido.StatusCompra.PAGO,
+                Pedido.StatusCompra.ENTREGUE
+            ])
+            .annotate(mes=TruncMonth("data_criacao"))
+            .values("mes")
+            .annotate(total=Sum("total"))
+            .order_by("mes")
+        )
+
+        resultado = [
+            {
+                "mes": item["mes"].strftime("%Y-%m"),
+                "total": float(item["total"])
+            }
+            for item in dados
+        ]
+
+        return Response(resultado)
