@@ -205,6 +205,41 @@ class PedidoViewSet(ModelViewSet):
             })
 
         return Response(dias_completos, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='stats/vendas-7-dias')
+    def vendas_ultimos_7_dias(self, request):
+        hoje = now().date()
+        sete_dias_atras = hoje - timedelta(days=6)
+
+        pedidos = (
+            Pedido.objects.filter(
+                data_criacao__date__gte=sete_dias_atras,
+                status__in=[
+                    Pedido.StatusCompra.FINALIZADO,
+                    Pedido.StatusCompra.PAGO,
+                    Pedido.StatusCompra.ENTREGUE
+                ]
+            )
+            .annotate(dia=TruncDate("data_criacao"))
+            .values("dia")
+            .annotate(total_vendido=Sum("total"))
+            .order_by("dia")
+        )
+
+        # garantir todos os 7 dias
+        resultado = []
+        for i in range(7):
+            dia = (sete_dias_atras + timedelta(days=i))
+
+            registro = next((p for p in pedidos if p["dia"] == dia), None)
+
+            resultado.append({
+                "dia": dia.isoformat(),
+                "total_vendido": float(registro["total_vendido"]) if registro else 0
+            })
+
+        return Response(resultado, status=status.HTTP_200_OK)
+
 
     # ==========================================================
     #           NOVOS ENDPOINTS PARA DASHBOARD
