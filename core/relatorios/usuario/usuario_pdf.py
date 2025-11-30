@@ -116,7 +116,8 @@ def gerar_relatorio_usuarios(request=None):
     elements.append(Paragraph("Sistema de Gestão — La Casa Di Frango", styles["Normal"]))
     elements.append(Spacer(1, 15))
 
-    nome_responsavel = request.user.name if request and hasattr(request, 'user') else "Administrador"
+    user = getattr(request, "user", None)
+    nome_responsavel = getattr(user, "name", "Administrador") if getattr(user, "is_authenticated", False) else "Administrador"
     data_geracao = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     elements.append(Paragraph(f"Responsável: <b>{nome_responsavel}</b>", styles["Normal"]))
