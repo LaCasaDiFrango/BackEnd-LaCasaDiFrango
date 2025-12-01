@@ -36,6 +36,9 @@ urlpatterns = [
     # Redoc UI
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    # API endpoints
+    # API endpoints REST
     path('api/', include(router.urls)),
+
+    # 🔹 Aqui entra o include dos relatórios
+    path('api/', include('core.urls_relatorios')),
 ]

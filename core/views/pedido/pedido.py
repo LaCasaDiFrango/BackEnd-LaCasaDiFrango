@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDate, TruncMonth
+from django.utils.timezone import now
 
 from core.models.pedido.pedido import Pedido
 from core.models.produto.produto import Produto
@@ -38,7 +42,7 @@ class PedidoViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy', 'remover_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
-        if self.action in ['relatorio_vendas_mes']:
+        if self.action in ['relatorio_vendas_mes', 'stats_total_vendas', 'stats_vendas_por_mes']:
             return [IsAuthenticated(), IsAdminUser()]
         if self.action in ['finalizar', 'adicionar_item']:
             return [IsAuthenticated(), IsOwnerOrAdmin()]
@@ -54,16 +58,13 @@ class PedidoViewSet(ModelViewSet):
     def finalizar(self, request, pk=None):
         pedido = self.get_object()
 
-        # Verifica permissão
         if pedido.usuario != request.user and not request.user.is_superuser:
             return Response(
                 {'detail': 'Você não tem permissão para finalizar este pedido.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
-
-    # Altere a verificação para aceitar somente pedidos com status PAGO
-        if pedido.status != Pedido.StatusCompra.PAGO:  # Usando a constante correta do seu model
+        if pedido.status != Pedido.StatusCompra.PAGO:
             return Response(
                 {'status': 'Pedido só pode ser finalizado se estiver no status PAGO.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -83,12 +84,11 @@ class PedidoViewSet(ModelViewSet):
                 item.produto.quantidade_em_estoque -= item.quantidade
                 item.produto.save()
 
-            pedido.status = Pedido.StatusCompra.FINALIZADO  # Ou o status que representa finalizado no seu model
+            pedido.status = Pedido.StatusCompra.FINALIZADO
             pedido.save()
 
         serializer = self.get_serializer(pedido)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     @action(detail=False, methods=['get'])
     def relatorio_vendas_mes(self, request):
@@ -97,7 +97,7 @@ class PedidoViewSet(ModelViewSet):
 
         pedidos = Pedido.objects.filter(
             status=Pedido.StatusCompra.FINALIZADO,
-            data__gte=inicio_mes
+            data_criacao__gte=inicio_mes
         )
 
         total_vendas = sum(pedido.total for pedido in pedidos)
@@ -181,3 +181,105 @@ class PedidoViewSet(ModelViewSet):
         pedido.save()
 
         return Response({'detail': 'Item removido com sucesso.'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='ultimos-7-dias')
+    def pedidos_ultimos_7_dias(self, request):
+        hoje = now()
+        sete_dias_atras = hoje - timedelta(days=6)
+
+        pedidos_por_dia = (
+            Pedido.objects.filter(data_criacao__date__gte=sete_dias_atras.date())
+            .annotate(dia=TruncDate('data_criacao'))
+            .values('dia')
+            .annotate(total=Count('id'))
+            .order_by('dia')
+        )
+
+        dias_completos = []
+        for i in range(7):
+            dia = (sete_dias_atras + timedelta(days=i)).date()
+            registro = next((p for p in pedidos_por_dia if p['dia'] == dia), None)
+            dias_completos.append({
+                'dia': dia.isoformat(),
+                'total': registro['total'] if registro else 0
+            })
+
+        return Response(dias_completos, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'], url_path='stats/vendas-7-dias')
+    def vendas_ultimos_7_dias(self, request):
+        hoje = now().date()
+        sete_dias_atras = hoje - timedelta(days=6)
+
+        pedidos = (
+            Pedido.objects.filter(
+                data_criacao__date__gte=sete_dias_atras,
+                status__in=[
+                    Pedido.StatusCompra.FINALIZADO,
+                    Pedido.StatusCompra.PAGO,
+                    Pedido.StatusCompra.ENTREGUE
+                ]
+            )
+            .annotate(dia=TruncDate("data_criacao"))
+            .values("dia")
+            .annotate(total_vendido=Sum("total"))
+            .order_by("dia")
+        )
+
+        # garantir todos os 7 dias
+        resultado = []
+        for i in range(7):
+            dia = (sete_dias_atras + timedelta(days=i))
+
+            registro = next((p for p in pedidos if p["dia"] == dia), None)
+
+            resultado.append({
+                "dia": dia.isoformat(),
+                "total_vendido": float(registro["total_vendido"]) if registro else 0
+            })
+
+        return Response(resultado, status=status.HTTP_200_OK)
+
+
+    # ==========================================================
+    #           NOVOS ENDPOINTS PARA DASHBOARD
+    # ==========================================================
+
+    @action(detail=False, methods=['get'], url_path='stats/total-vendas')
+    def stats_total_vendas(self, request):
+        total = (
+            Pedido.objects
+            .filter(status__in=[
+                Pedido.StatusCompra.FINALIZADO,
+                Pedido.StatusCompra.PAGO,
+                Pedido.StatusCompra.ENTREGUE
+            ])
+            .aggregate(total_vendas=Sum("total"))
+        )["total_vendas"] or 0
+
+        return Response({"total_vendas": float(total)})
+
+    @action(detail=False, methods=['get'], url_path='stats/vendas-por-mes')
+    def stats_vendas_por_mes(self, request):
+        dados = (
+            Pedido.objects
+            .filter(status__in=[
+                Pedido.StatusCompra.FINALIZADO,
+                Pedido.StatusCompra.PAGO,
+                Pedido.StatusCompra.ENTREGUE
+            ])
+            .annotate(mes=TruncMonth("data_criacao"))
+            .values("mes")
+            .annotate(total=Sum("total"))
+            .order_by("mes")
+        )
+
+        resultado = [
+            {
+                "mes": item["mes"].strftime("%Y-%m"),
+                "total": float(item["total"])
+            }
+            for item in dados
+        ]
+
+        return Response(resultado)
